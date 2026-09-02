@@ -8,6 +8,10 @@ export class ZodValidationPipe implements PipeTransform {
   constructor(private schema?: ZodSchema) {}
 
   transform(value: unknown, metadata: ArgumentMetadata) {
+    if (this.schema && metadata.type !== 'body') {
+      return value;
+    }
+
     const activeSchema = this.schema || (metadata.metatype as any)?.schema;
 
     if (!activeSchema || typeof activeSchema.safeParse !== 'function') {

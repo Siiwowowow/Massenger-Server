@@ -77,7 +77,7 @@ ${cyan}${bold}│${reset}  ${bold}🔒 Auth Endpoints:${reset}    ${cyan}http://
 ${cyan}${bold}│${reset}  ${bold}❤️  Health Check:${reset}      ${green}http://localhost:${port}/health${reset}                  ${cyan}${bold}│${reset}
 ${cyan}${bold}├──────────────────────────────────────────────────────────────────┤${reset}
 ${cyan}${bold}│${reset}  ${bold}⚙️  Environment:${reset}       ${yellow}${process.env.NODE_ENV || 'development'}${reset}                             ${cyan}${bold}│${reset}
-${cyan}${bold}│${reset}  ${bold}🗄️  Database:${reset}          ${green}PostgreSQL (Prisma 7 Adapter Active)${reset}     ${cyan}${bold}│${reset}
+${cyan}${bold}│${reset}  ${bold}🗄️  Database:${reset}          ${green}MongoDB (Prisma Connected)${reset}               ${cyan}${bold}│${reset}
 ${cyan}${bold}└──────────────────────────────────────────────────────────────────┘${reset}
 `);
 }

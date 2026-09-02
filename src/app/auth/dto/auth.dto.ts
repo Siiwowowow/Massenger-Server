@@ -5,11 +5,10 @@ export const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z
     .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
-  phoneNumber: z.string().optional(),
+    .min(6, 'Password must be at least 6 characters'),
+  phoneNumber: z.string().optional().nullable(),
+  role: z.string().optional().nullable(),
+  image: z.string().optional().nullable(),
 });
 
 export type RegisterDto = z.infer<typeof registerSchema>;
@@ -27,20 +26,29 @@ export const forgotPasswordSchema = z.object({
 
 export type ForgotPasswordDto = z.infer<typeof forgotPasswordSchema>;
 
-export const resetPasswordSchema = z.object({
-  token: z.string().min(1, 'Reset token is required'),
-  newPassword: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
-});
+export const resetPasswordSchema = z
+  .object({
+    email: z.string().email('Invalid email address').optional().nullable(),
+    token: z.string().optional().nullable(),
+    otp: z.string().optional().nullable(),
+    newPassword: z.string().min(6, 'Password must be at least 6 characters'),
+  })
+  .refine((data) => Boolean(data.token || data.otp), {
+    message: 'Reset code is required',
+    path: ['otp'],
+  });
 
 export type ResetPasswordDto = z.infer<typeof resetPasswordSchema>;
 
-export const verifyEmailSchema = z.object({
-  token: z.string().min(1, 'Verification token is required'),
-});
+export const verifyEmailSchema = z
+  .object({
+    email: z.string().email('Invalid email address').optional().nullable(),
+    token: z.string().optional().nullable(),
+    otp: z.string().optional().nullable(),
+  })
+  .refine((data) => Boolean(data.token || data.otp), {
+    message: 'Verification code is required',
+    path: ['otp'],
+  });
 
 export type VerifyEmailDto = z.infer<typeof verifyEmailSchema>;

@@ -9,7 +9,7 @@ export const envSchema = z.object({
   FRONTEND_URL: z.string().optional(),
   API_PREFIX: z.string().default('api/v1'),
 
-  DATABASE_URL: z.string().default('postgresql://postgres:postgres@localhost:5432/primary_backend_db?schema=public'),
+  DATABASE_URL: z.string().default('mongodb://localhost:27017/primary_backend_db'),
 
   BETTER_AUTH_SECRET: z.string().min(16, 'BETTER_AUTH_SECRET must be at least 16 characters'),
   BETTER_AUTH_URL: z.string().default('http://localhost:5000'),
