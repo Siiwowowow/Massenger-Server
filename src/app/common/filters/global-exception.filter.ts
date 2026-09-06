@@ -20,6 +20,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const hostType = host.getType<GqlContextType>();
 
+    // Handle WebSocket Context (handled directly by WebSocket layer)
+    if (hostType.toString() === 'ws') {
+      return;
+    }
+
     // Handle GraphQL Context
     if (hostType === 'graphql') {
       return this.handleGraphQLError(exception);

@@ -167,6 +167,85 @@ exports.Prisma.OtpTokenScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.CommunicationUserScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  externalId: 'externalId',
+  name: 'name',
+  email: 'email',
+  avatar: 'avatar',
+  isOnline: 'isOnline',
+  lastSeenAt: 'lastSeenAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ConversationScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  type: 'type',
+  title: 'title',
+  avatar: 'avatar',
+  lastMessageAt: 'lastMessageAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ConversationParticipantScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  userId: 'userId',
+  role: 'role',
+  joinedAt: 'joinedAt',
+  lastReadAt: 'lastReadAt',
+  lastReadMessageId: 'lastReadMessageId'
+};
+
+exports.Prisma.MessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  senderId: 'senderId',
+  type: 'type',
+  content: 'content',
+  metadata: 'metadata',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.MessageReceiptScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  userId: 'userId',
+  projectId: 'projectId',
+  deliveredAt: 'deliveredAt',
+  readAt: 'readAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.MessageRequestScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  senderId: 'senderId',
+  receiverId: 'receiverId',
+  status: 'status',
+  message: 'message',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ProjectScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  apiKey: 'apiKey',
+  apiSecret: 'apiSecret',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -196,6 +275,37 @@ exports.TokenType = exports.$Enums.TokenType = {
   REFRESH_TOKEN: 'REFRESH_TOKEN'
 };
 
+exports.ProjectStatus = exports.$Enums.ProjectStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  SUSPENDED: 'SUSPENDED'
+};
+
+exports.ConversationType = exports.$Enums.ConversationType = {
+  DIRECT: 'DIRECT',
+  GROUP: 'GROUP'
+};
+
+exports.ParticipantRole = exports.$Enums.ParticipantRole = {
+  MEMBER: 'MEMBER',
+  ADMIN: 'ADMIN'
+};
+
+exports.MessageType = exports.$Enums.MessageType = {
+  TEXT: 'TEXT',
+  IMAGE: 'IMAGE',
+  VIDEO: 'VIDEO',
+  AUDIO: 'AUDIO',
+  FILE: 'FILE',
+  SYSTEM: 'SYSTEM'
+};
+
+exports.RequestStatus = exports.$Enums.RequestStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED'
+};
+
 exports.Prisma.ModelName = {
   AdminProfile: 'AdminProfile',
   AuditLog: 'AuditLog',
@@ -203,7 +313,14 @@ exports.Prisma.ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
-  OtpToken: 'OtpToken'
+  OtpToken: 'OtpToken',
+  CommunicationUser: 'CommunicationUser',
+  Conversation: 'Conversation',
+  ConversationParticipant: 'ConversationParticipant',
+  Message: 'Message',
+  MessageReceipt: 'MessageReceipt',
+  MessageRequest: 'MessageRequest',
+  Project: 'Project'
 };
 /**
  * Create the Client
@@ -216,7 +333,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "D:\\Mongo Db\\NESTJS-MASSENGER-BACKEND\\src\\generated\\prisma",
+      "value": "d:\\Mongo Db\\NESTJS-MASSENGER-BACKEND\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -230,7 +347,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "D:\\Mongo Db\\NESTJS-MASSENGER-BACKEND\\prisma\\schema\\schema.prisma",
+    "sourceFilePath": "d:\\Mongo Db\\NESTJS-MASSENGER-BACKEND\\prisma\\schema\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -244,7 +361,6 @@ const config = {
     "db"
   ],
   "activeProvider": "mongodb",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -253,13 +369,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "model AdminProfile {\n  id          String   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  userId      String   @unique @db.ObjectId\n  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n  department  String?\n  permissions String[] @default([])\n  notes       String?\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  @@map(\"admin_profiles\")\n}\n\nmodel AuditLog {\n  id        String   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  userId    String?  @db.ObjectId\n  action    String\n  resource  String\n  payload   Json?\n  ipAddress String?\n  userAgent String?\n  createdAt DateTime @default(now())\n\n  @@index([userId])\n  @@index([action])\n  @@map(\"audit_logs\")\n}\n\nmodel User {\n  id            String     @id @default(auto()) @map(\"_id\") @db.ObjectId\n  name          String\n  email         String     @unique\n  emailVerified Boolean    @default(false)\n  image         String?\n  role          Role       @default(USER)\n  status        UserStatus @default(ACTIVE)\n  phoneNumber   String?\n  createdAt     DateTime   @default(now())\n  updatedAt     DateTime   @updatedAt\n\n  sessions     Session[]\n  accounts     Account[]\n  adminProfile AdminProfile?\n\n  @@map(\"users\")\n}\n\nmodel Session {\n  id        String   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  expiresAt DateTime\n  token     String   @unique\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n  ipAddress String?\n  userAgent String?\n  userId    String   @db.ObjectId\n  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@map(\"sessions\")\n}\n\nmodel Account {\n  id                    String    @id @default(auto()) @map(\"_id\") @db.ObjectId\n  accountId             String\n  providerId            String\n  userId                String    @db.ObjectId\n  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)\n  accessToken           String?\n  refreshToken          String?\n  idToken               String?\n  accessTokenExpiresAt  DateTime?\n  refreshTokenExpiresAt DateTime?\n  scope                 String?\n  password              String?\n  issuer                String?\n  createdAt             DateTime  @default(now())\n  updatedAt             DateTime  @updatedAt\n\n  @@map(\"accounts\")\n}\n\nmodel Verification {\n  id         String    @id @default(auto()) @map(\"_id\") @db.ObjectId\n  identifier String\n  value      String\n  expiresAt  DateTime\n  createdAt  DateTime? @default(now())\n  updatedAt  DateTime? @updatedAt\n\n  @@map(\"verifications\")\n}\n\nmodel OtpToken {\n  id         String    @id @default(auto()) @map(\"_id\") @db.ObjectId\n  identifier String\n  token      String\n  type       TokenType @default(OTP)\n  expiresAt  DateTime\n  isUsed     Boolean   @default(false)\n  createdAt  DateTime  @default(now())\n\n  @@index([identifier, type])\n  @@map(\"otp_tokens\")\n}\n\nenum Role {\n  USER\n  ADMIN\n  SUPER_ADMIN\n}\n\nenum UserStatus {\n  ACTIVE\n  INACTIVE\n  SUSPENDED\n  PENDING_VERIFICATION\n}\n\nenum TokenType {\n  PASSWORD_RESET\n  EMAIL_VERIFICATION\n  OTP\n  REFRESH_TOKEN\n}\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"mongodb\"\n  url      = env(\"DATABASE_URL\")\n}\n",
-  "inlineSchemaHash": "162724e1f04225bdc2ff583afcf64b3fed9e4f08944c5bb60882ddfb3fdefc4b",
+  "inlineSchema": "model AdminProfile {\n  id          String   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  userId      String   @unique @db.ObjectId\n  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n  department  String?\n  permissions String[] @default([])\n  notes       String?\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  @@map(\"admin_profiles\")\n}\n\nmodel AuditLog {\n  id        String   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  userId    String?  @db.ObjectId\n  action    String\n  resource  String\n  payload   Json?\n  ipAddress String?\n  userAgent String?\n  createdAt DateTime @default(now())\n\n  @@index([userId])\n  @@index([action])\n  @@map(\"audit_logs\")\n}\n\nmodel User {\n  id            String     @id @default(auto()) @map(\"_id\") @db.ObjectId\n  name          String\n  email         String     @unique\n  emailVerified Boolean    @default(false)\n  image         String?\n  role          Role       @default(USER)\n  status        UserStatus @default(ACTIVE)\n  phoneNumber   String?\n  createdAt     DateTime   @default(now())\n  updatedAt     DateTime   @updatedAt\n\n  sessions     Session[]\n  accounts     Account[]\n  adminProfile AdminProfile?\n\n  @@map(\"users\")\n}\n\nmodel Session {\n  id        String   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  expiresAt DateTime\n  token     String   @unique\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n  ipAddress String?\n  userAgent String?\n  userId    String   @db.ObjectId\n  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@map(\"sessions\")\n}\n\nmodel Account {\n  id                    String    @id @default(auto()) @map(\"_id\") @db.ObjectId\n  accountId             String\n  providerId            String\n  userId                String    @db.ObjectId\n  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)\n  accessToken           String?\n  refreshToken          String?\n  idToken               String?\n  accessTokenExpiresAt  DateTime?\n  refreshTokenExpiresAt DateTime?\n  scope                 String?\n  password              String?\n  issuer                String?\n  createdAt             DateTime  @default(now())\n  updatedAt             DateTime  @updatedAt\n\n  @@map(\"accounts\")\n}\n\nmodel Verification {\n  id         String    @id @default(auto()) @map(\"_id\") @db.ObjectId\n  identifier String\n  value      String\n  expiresAt  DateTime\n  createdAt  DateTime? @default(now())\n  updatedAt  DateTime? @updatedAt\n\n  @@map(\"verifications\")\n}\n\nmodel OtpToken {\n  id         String    @id @default(auto()) @map(\"_id\") @db.ObjectId\n  identifier String\n  token      String\n  type       TokenType @default(OTP)\n  expiresAt  DateTime\n  isUsed     Boolean   @default(false)\n  createdAt  DateTime  @default(now())\n\n  @@index([identifier, type])\n  @@map(\"otp_tokens\")\n}\n\nmodel CommunicationUser {\n  id         String    @id @default(auto()) @map(\"_id\") @db.ObjectId\n  projectId  String    @db.ObjectId\n  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)\n  externalId String\n  name       String\n  email      String?\n  avatar     String?\n  isOnline   Boolean   @default(false)\n  lastSeenAt DateTime?\n  createdAt  DateTime  @default(now())\n  updatedAt  DateTime  @updatedAt\n\n  participations          ConversationParticipant[]\n  sentMessages            Message[]\n  messageReceipts         MessageReceipt[]\n  sentMessageRequests     MessageRequest[]          @relation(\"SentMessageRequests\")\n  receivedMessageRequests MessageRequest[]          @relation(\"ReceivedMessageRequests\")\n\n  @@unique([projectId, externalId])\n  @@index([projectId])\n  @@map(\"communication_users\")\n}\n\nmodel Conversation {\n  id            String           @id @default(auto()) @map(\"_id\") @db.ObjectId\n  projectId     String           @db.ObjectId\n  project       Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)\n  type          ConversationType\n  title         String?\n  avatar        String?\n  lastMessageAt DateTime?\n  createdAt     DateTime         @default(now())\n  updatedAt     DateTime         @updatedAt\n\n  participants ConversationParticipant[]\n  messages     Message[]\n\n  @@index([projectId])\n  @@index([projectId, updatedAt])\n  @@map(\"conversations\")\n}\n\nmodel ConversationParticipant {\n  id                String            @id @default(auto()) @map(\"_id\") @db.ObjectId\n  conversationId    String            @db.ObjectId\n  conversation      Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)\n  userId            String            @db.ObjectId\n  user              CommunicationUser @relation(fields: [userId], references: [id], onDelete: Cascade)\n  role              ParticipantRole   @default(MEMBER)\n  joinedAt          DateTime          @default(now())\n  lastReadAt        DateTime?\n  lastReadMessageId String?           @db.ObjectId\n\n  @@unique([conversationId, userId])\n  @@index([conversationId])\n  @@index([userId])\n  @@map(\"conversation_participants\")\n}\n\nmodel Message {\n  id             String            @id @default(auto()) @map(\"_id\") @db.ObjectId\n  conversationId String            @db.ObjectId\n  conversation   Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)\n  senderId       String            @db.ObjectId\n  sender         CommunicationUser @relation(fields: [senderId], references: [id], onDelete: Cascade)\n  type           MessageType       @default(TEXT)\n  content        String\n  metadata       Json?\n  deletedAt      DateTime?\n  createdAt      DateTime          @default(now())\n  updatedAt      DateTime          @updatedAt\n\n  receipts MessageReceipt[]\n\n  @@index([conversationId, createdAt])\n  @@index([senderId])\n  @@map(\"messages\")\n}\n\nmodel MessageReceipt {\n  id          String            @id @default(auto()) @map(\"_id\") @db.ObjectId\n  messageId   String            @db.ObjectId\n  message     Message           @relation(fields: [messageId], references: [id], onDelete: Cascade)\n  userId      String            @db.ObjectId\n  user        CommunicationUser @relation(fields: [userId], references: [id], onDelete: Cascade)\n  projectId   String            @db.ObjectId\n  project     Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)\n  deliveredAt DateTime?\n  readAt      DateTime?\n  createdAt   DateTime          @default(now())\n  updatedAt   DateTime          @updatedAt\n\n  @@unique([messageId, userId])\n  @@index([userId, projectId])\n  @@index([projectId, userId])\n  @@index([messageId])\n  @@map(\"message_receipts\")\n}\n\nmodel MessageRequest {\n  id         String            @id @default(auto()) @map(\"_id\") @db.ObjectId\n  projectId  String            @db.ObjectId\n  project    Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)\n  senderId   String            @db.ObjectId\n  sender     CommunicationUser @relation(\"SentMessageRequests\", fields: [senderId], references: [id], onDelete: Cascade)\n  receiverId String            @db.ObjectId\n  receiver   CommunicationUser @relation(\"ReceivedMessageRequests\", fields: [receiverId], references: [id], onDelete: Cascade)\n  status     RequestStatus     @default(PENDING)\n  message    String?\n  createdAt  DateTime          @default(now())\n  updatedAt  DateTime          @updatedAt\n\n  @@unique([projectId, senderId, receiverId])\n  @@index([receiverId, status])\n  @@index([senderId, status])\n  @@map(\"message_requests\")\n}\n\nenum Role {\n  USER\n  ADMIN\n  SUPER_ADMIN\n}\n\nenum UserStatus {\n  ACTIVE\n  INACTIVE\n  SUSPENDED\n  PENDING_VERIFICATION\n}\n\nenum TokenType {\n  PASSWORD_RESET\n  EMAIL_VERIFICATION\n  OTP\n  REFRESH_TOKEN\n}\n\nenum ProjectStatus {\n  ACTIVE\n  INACTIVE\n  SUSPENDED\n}\n\nenum ConversationType {\n  DIRECT\n  GROUP\n}\n\nenum ParticipantRole {\n  MEMBER\n  ADMIN\n}\n\nenum MessageType {\n  TEXT\n  IMAGE\n  VIDEO\n  AUDIO\n  FILE\n  SYSTEM\n}\n\nenum RequestStatus {\n  PENDING\n  ACCEPTED\n  REJECTED\n}\n\nmodel Project {\n  id        String        @id @default(auto()) @map(\"_id\") @db.ObjectId\n  name      String\n  slug      String        @unique\n  apiKey    String        @unique\n  apiSecret String\n  status    ProjectStatus @default(ACTIVE)\n  createdAt DateTime      @default(now())\n  updatedAt DateTime      @updatedAt\n\n  communicationUsers CommunicationUser[]\n  conversations      Conversation[]\n  messageReceipts    MessageReceipt[]\n  messageRequests    MessageRequest[]\n\n  @@map(\"projects\")\n}\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"mongodb\"\n  url      = env(\"DATABASE_URL\")\n}\n",
+  "inlineSchemaHash": "880f5f6da35776fe1e4f41edbdf8a3912c5e40be227a7a8d5088a39cd58a4705",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"AdminProfile\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"AdminProfileToUser\"},{\"name\":\"department\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"permissions\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"admin_profiles\"},\"AuditLog\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"action\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"resource\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"payload\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"ipAddress\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userAgent\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"audit_logs\"},\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"emailVerified\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"image\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"Role\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"UserStatus\"},{\"name\":\"phoneNumber\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"sessions\",\"kind\":\"object\",\"type\":\"Session\",\"relationName\":\"SessionToUser\"},{\"name\":\"accounts\",\"kind\":\"object\",\"type\":\"Account\",\"relationName\":\"AccountToUser\"},{\"name\":\"adminProfile\",\"kind\":\"object\",\"type\":\"AdminProfile\",\"relationName\":\"AdminProfileToUser\"}],\"dbName\":\"users\"},\"Session\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"expiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"token\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"ipAddress\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userAgent\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"SessionToUser\"}],\"dbName\":\"sessions\"},\"Account\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"accountId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"providerId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"AccountToUser\"},{\"name\":\"accessToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"refreshToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"idToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"accessTokenExpiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"refreshTokenExpiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"scope\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"issuer\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"accounts\"},\"Verification\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"identifier\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"value\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"expiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"verifications\"},\"OtpToken\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"identifier\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"token\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"type\",\"kind\":\"enum\",\"type\":\"TokenType\"},{\"name\":\"expiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"isUsed\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"otp_tokens\"}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"AdminProfile\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"AdminProfileToUser\"},{\"name\":\"department\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"permissions\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"notes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"admin_profiles\"},\"AuditLog\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"action\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"resource\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"payload\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"ipAddress\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userAgent\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"audit_logs\"},\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"emailVerified\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"image\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"Role\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"UserStatus\"},{\"name\":\"phoneNumber\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"sessions\",\"kind\":\"object\",\"type\":\"Session\",\"relationName\":\"SessionToUser\"},{\"name\":\"accounts\",\"kind\":\"object\",\"type\":\"Account\",\"relationName\":\"AccountToUser\"},{\"name\":\"adminProfile\",\"kind\":\"object\",\"type\":\"AdminProfile\",\"relationName\":\"AdminProfileToUser\"}],\"dbName\":\"users\"},\"Session\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"expiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"token\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"ipAddress\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userAgent\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"SessionToUser\"}],\"dbName\":\"sessions\"},\"Account\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"accountId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"providerId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"AccountToUser\"},{\"name\":\"accessToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"refreshToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"idToken\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"accessTokenExpiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"refreshTokenExpiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"scope\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"issuer\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"accounts\"},\"Verification\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"identifier\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"value\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"expiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"verifications\"},\"OtpToken\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"identifier\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"token\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"type\",\"kind\":\"enum\",\"type\":\"TokenType\"},{\"name\":\"expiresAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"isUsed\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"otp_tokens\"},\"CommunicationUser\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"projectId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"project\",\"kind\":\"object\",\"type\":\"Project\",\"relationName\":\"CommunicationUserToProject\"},{\"name\":\"externalId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"avatar\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isOnline\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"lastSeenAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"participations\",\"kind\":\"object\",\"type\":\"ConversationParticipant\",\"relationName\":\"CommunicationUserToConversationParticipant\"},{\"name\":\"sentMessages\",\"kind\":\"object\",\"type\":\"Message\",\"relationName\":\"CommunicationUserToMessage\"},{\"name\":\"messageReceipts\",\"kind\":\"object\",\"type\":\"MessageReceipt\",\"relationName\":\"CommunicationUserToMessageReceipt\"},{\"name\":\"sentMessageRequests\",\"kind\":\"object\",\"type\":\"MessageRequest\",\"relationName\":\"SentMessageRequests\"},{\"name\":\"receivedMessageRequests\",\"kind\":\"object\",\"type\":\"MessageRequest\",\"relationName\":\"ReceivedMessageRequests\"}],\"dbName\":\"communication_users\"},\"Conversation\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"projectId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"project\",\"kind\":\"object\",\"type\":\"Project\",\"relationName\":\"ConversationToProject\"},{\"name\":\"type\",\"kind\":\"enum\",\"type\":\"ConversationType\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"avatar\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"lastMessageAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"participants\",\"kind\":\"object\",\"type\":\"ConversationParticipant\",\"relationName\":\"ConversationToConversationParticipant\"},{\"name\":\"messages\",\"kind\":\"object\",\"type\":\"Message\",\"relationName\":\"ConversationToMessage\"}],\"dbName\":\"conversations\"},\"ConversationParticipant\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"conversationId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"conversation\",\"kind\":\"object\",\"type\":\"Conversation\",\"relationName\":\"ConversationToConversationParticipant\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"CommunicationUser\",\"relationName\":\"CommunicationUserToConversationParticipant\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"ParticipantRole\"},{\"name\":\"joinedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"lastReadAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"lastReadMessageId\",\"kind\":\"scalar\",\"type\":\"String\"}],\"dbName\":\"conversation_participants\"},\"Message\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"conversationId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"conversation\",\"kind\":\"object\",\"type\":\"Conversation\",\"relationName\":\"ConversationToMessage\"},{\"name\":\"senderId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sender\",\"kind\":\"object\",\"type\":\"CommunicationUser\",\"relationName\":\"CommunicationUserToMessage\"},{\"name\":\"type\",\"kind\":\"enum\",\"type\":\"MessageType\"},{\"name\":\"content\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"metadata\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"deletedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"receipts\",\"kind\":\"object\",\"type\":\"MessageReceipt\",\"relationName\":\"MessageToMessageReceipt\"}],\"dbName\":\"messages\"},\"MessageReceipt\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"messageId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"message\",\"kind\":\"object\",\"type\":\"Message\",\"relationName\":\"MessageToMessageReceipt\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"CommunicationUser\",\"relationName\":\"CommunicationUserToMessageReceipt\"},{\"name\":\"projectId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"project\",\"kind\":\"object\",\"type\":\"Project\",\"relationName\":\"MessageReceiptToProject\"},{\"name\":\"deliveredAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"readAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"message_receipts\"},\"MessageRequest\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"projectId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"project\",\"kind\":\"object\",\"type\":\"Project\",\"relationName\":\"MessageRequestToProject\"},{\"name\":\"senderId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sender\",\"kind\":\"object\",\"type\":\"CommunicationUser\",\"relationName\":\"SentMessageRequests\"},{\"name\":\"receiverId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"receiver\",\"kind\":\"object\",\"type\":\"CommunicationUser\",\"relationName\":\"ReceivedMessageRequests\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"RequestStatus\"},{\"name\":\"message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"message_requests\"},\"Project\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"slug\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"apiKey\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"apiSecret\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"ProjectStatus\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"communicationUsers\",\"kind\":\"object\",\"type\":\"CommunicationUser\",\"relationName\":\"CommunicationUserToProject\"},{\"name\":\"conversations\",\"kind\":\"object\",\"type\":\"Conversation\",\"relationName\":\"ConversationToProject\"},{\"name\":\"messageReceipts\",\"kind\":\"object\",\"type\":\"MessageReceipt\",\"relationName\":\"MessageReceiptToProject\"},{\"name\":\"messageRequests\",\"kind\":\"object\",\"type\":\"MessageRequest\",\"relationName\":\"MessageRequestToProject\"}],\"dbName\":\"projects\"}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),

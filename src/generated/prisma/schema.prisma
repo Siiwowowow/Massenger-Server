@@ -103,6 +103,125 @@ model OtpToken {
   @@map("otp_tokens")
 }
 
+model CommunicationUser {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  projectId  String    @db.ObjectId
+  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  externalId String
+  name       String
+  email      String?
+  avatar     String?
+  isOnline   Boolean   @default(false)
+  lastSeenAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  participations          ConversationParticipant[]
+  sentMessages            Message[]
+  messageReceipts         MessageReceipt[]
+  sentMessageRequests     MessageRequest[]          @relation("SentMessageRequests")
+  receivedMessageRequests MessageRequest[]          @relation("ReceivedMessageRequests")
+
+  @@unique([projectId, externalId])
+  @@index([projectId])
+  @@map("communication_users")
+}
+
+model Conversation {
+  id            String           @id @default(auto()) @map("_id") @db.ObjectId
+  projectId     String           @db.ObjectId
+  project       Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  type          ConversationType
+  title         String?
+  avatar        String?
+  lastMessageAt DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([projectId])
+  @@index([projectId, updatedAt])
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id                String            @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId    String            @db.ObjectId
+  conversation      Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId            String            @db.ObjectId
+  user              CommunicationUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role              ParticipantRole   @default(MEMBER)
+  joinedAt          DateTime          @default(now())
+  lastReadAt        DateTime?
+  lastReadMessageId String?           @db.ObjectId
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id             String            @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String            @db.ObjectId
+  conversation   Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String            @db.ObjectId
+  sender         CommunicationUser @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  type           MessageType       @default(TEXT)
+  content        String
+  metadata       Json?
+  deletedAt      DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  receipts MessageReceipt[]
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+  @@map("messages")
+}
+
+model MessageReceipt {
+  id          String            @id @default(auto()) @map("_id") @db.ObjectId
+  messageId   String            @db.ObjectId
+  message     Message           @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId      String            @db.ObjectId
+  user        CommunicationUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId   String            @db.ObjectId
+  project     Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  deliveredAt DateTime?
+  readAt      DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([messageId, userId])
+  @@index([userId, projectId])
+  @@index([projectId, userId])
+  @@index([messageId])
+  @@map("message_receipts")
+}
+
+model MessageRequest {
+  id         String            @id @default(auto()) @map("_id") @db.ObjectId
+  projectId  String            @db.ObjectId
+  project    Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  senderId   String            @db.ObjectId
+  sender     CommunicationUser @relation("SentMessageRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String            @db.ObjectId
+  receiver   CommunicationUser @relation("ReceivedMessageRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+  status     RequestStatus     @default(PENDING)
+  message    String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@unique([projectId, senderId, receiverId])
+  @@index([receiverId, status])
+  @@index([senderId, status])
+  @@map("message_requests")
+}
+
 enum Role {
   USER
   ADMIN
@@ -121,6 +240,55 @@ enum TokenType {
   EMAIL_VERIFICATION
   OTP
   REFRESH_TOKEN
+}
+
+enum ProjectStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum ConversationType {
+  DIRECT
+  GROUP
+}
+
+enum ParticipantRole {
+  MEMBER
+  ADMIN
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  FILE
+  SYSTEM
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Project {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  slug      String        @unique
+  apiKey    String        @unique
+  apiSecret String
+  status    ProjectStatus @default(ACTIVE)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  communicationUsers CommunicationUser[]
+  conversations      Conversation[]
+  messageReceipts    MessageReceipt[]
+  messageRequests    MessageRequest[]
+
+  @@map("projects")
 }
 
 generator client {

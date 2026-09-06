@@ -20,8 +20,8 @@ export class TransformResponseInterceptor<T>
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<ApiResponse<T>> {
-    // Skip transformation for GraphQL requests
-    if (context.getType().toString() === 'graphql') {
+    // Skip transformation for GraphQL and WebSocket requests
+    if (context.getType().toString() === 'graphql' || context.getType().toString() === 'ws') {
       return next.handle();
     }
 

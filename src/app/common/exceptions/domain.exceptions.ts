@@ -40,3 +40,5 @@ export class BadRequestException extends AppException {
     super(message, HttpStatus.BAD_REQUEST, ErrorCode.BAD_REQUEST);
   }
 }
+
+export { AppException };

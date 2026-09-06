@@ -195,6 +195,85 @@ exports.Prisma.OtpTokenScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.CommunicationUserScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  externalId: 'externalId',
+  name: 'name',
+  email: 'email',
+  avatar: 'avatar',
+  isOnline: 'isOnline',
+  lastSeenAt: 'lastSeenAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ConversationScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  type: 'type',
+  title: 'title',
+  avatar: 'avatar',
+  lastMessageAt: 'lastMessageAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ConversationParticipantScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  userId: 'userId',
+  role: 'role',
+  joinedAt: 'joinedAt',
+  lastReadAt: 'lastReadAt',
+  lastReadMessageId: 'lastReadMessageId'
+};
+
+exports.Prisma.MessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  senderId: 'senderId',
+  type: 'type',
+  content: 'content',
+  metadata: 'metadata',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.MessageReceiptScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  userId: 'userId',
+  projectId: 'projectId',
+  deliveredAt: 'deliveredAt',
+  readAt: 'readAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.MessageRequestScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  senderId: 'senderId',
+  receiverId: 'receiverId',
+  status: 'status',
+  message: 'message',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ProjectScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  apiKey: 'apiKey',
+  apiSecret: 'apiSecret',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -224,6 +303,37 @@ exports.TokenType = exports.$Enums.TokenType = {
   REFRESH_TOKEN: 'REFRESH_TOKEN'
 };
 
+exports.ConversationType = exports.$Enums.ConversationType = {
+  DIRECT: 'DIRECT',
+  GROUP: 'GROUP'
+};
+
+exports.ParticipantRole = exports.$Enums.ParticipantRole = {
+  MEMBER: 'MEMBER',
+  ADMIN: 'ADMIN'
+};
+
+exports.MessageType = exports.$Enums.MessageType = {
+  TEXT: 'TEXT',
+  IMAGE: 'IMAGE',
+  VIDEO: 'VIDEO',
+  AUDIO: 'AUDIO',
+  FILE: 'FILE',
+  SYSTEM: 'SYSTEM'
+};
+
+exports.RequestStatus = exports.$Enums.RequestStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED'
+};
+
+exports.ProjectStatus = exports.$Enums.ProjectStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  SUSPENDED: 'SUSPENDED'
+};
+
 exports.Prisma.ModelName = {
   AdminProfile: 'AdminProfile',
   AuditLog: 'AuditLog',
@@ -231,7 +341,14 @@ exports.Prisma.ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
-  OtpToken: 'OtpToken'
+  OtpToken: 'OtpToken',
+  CommunicationUser: 'CommunicationUser',
+  Conversation: 'Conversation',
+  ConversationParticipant: 'ConversationParticipant',
+  Message: 'Message',
+  MessageReceipt: 'MessageReceipt',
+  MessageRequest: 'MessageRequest',
+  Project: 'Project'
 };
 
 /**

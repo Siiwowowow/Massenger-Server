@@ -1,0 +1,17 @@
+model Project {
+  id                 String              @id @default(auto()) @map("_id") @db.ObjectId
+  name               String
+  slug               String              @unique
+  apiKey             String              @unique
+  apiSecret          String
+  status             ProjectStatus       @default(ACTIVE)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  communicationUsers CommunicationUser[]
+  conversations      Conversation[]
+  messageReceipts    MessageReceipt[]
+  messageRequests    MessageRequest[]
+
+  @@map("projects")
+}

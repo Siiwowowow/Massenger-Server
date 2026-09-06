@@ -1,0 +1,585 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { PrismaService } from '../../database/prisma.service';
+import {
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+  ConflictException,
+} from '../../common/exceptions/domain.exceptions';
+import {
+  ConversationType,
+  ParticipantRole,
+} from '../../../generated/prisma';
+import {
+  CreateGroupConversationDto,
+  AddParticipantDto,
+  QueryConversationsDto,
+} from './dto/conversation.dto';
+
+@Injectable()
+export class ConversationService {
+  private readonly logger = new Logger(ConversationService.name);
+
+  constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * Project-aware membership verification
+   */
+  async isParticipant(
+    conversationId: string,
+    userId: string,
+    projectId: string,
+  ): Promise<boolean> {
+    const participant = await this.prisma.conversationParticipant.findFirst({
+      where: {
+        conversationId,
+        userId,
+        conversation: {
+          projectId,
+        },
+      },
+    });
+    return !!participant;
+  }
+
+  /**
+   * Create or return existing direct conversation (idempotent)
+   */
+  async createDirect(
+    projectId: string,
+    requesterId: string,
+    participantId: string,
+  ) {
+    if (participantId === requesterId) {
+      throw new BadRequestException(
+        'Cannot create a direct conversation with yourself',
+      );
+    }
+
+    // Resolve target communication user in the current project
+    const targetUser = await this.prisma.communicationUser.findFirst({
+      where: {
+        projectId,
+        OR: [{ id: participantId }, { externalId: participantId }],
+      },
+    });
+
+    if (!targetUser) {
+      throw new NotFoundException('CommunicationUser', participantId);
+    }
+
+    if (targetUser.id === requesterId) {
+      throw new BadRequestException(
+        'Cannot create a direct conversation with yourself',
+      );
+    }
+
+    // Check if DIRECT conversation already exists between these two users in this project
+    const existing = await this.prisma.conversation.findFirst({
+      where: {
+        projectId,
+        type: ConversationType.DIRECT,
+        AND: [
+          { participants: { some: { userId: requesterId } } },
+          { participants: { some: { userId: targetUser.id } } },
+        ],
+      },
+      include: this.getConversationInclude(),
+    });
+
+    if (existing) {
+      this.logger.log(
+        `Returning existing DIRECT conversation: ${existing.id} between ${requesterId} and ${targetUser.id}`,
+      );
+      return existing;
+    }
+
+    // Create new direct conversation
+    const conversation = await this.prisma.conversation.create({
+      data: {
+        projectId,
+        type: ConversationType.DIRECT,
+        participants: {
+          create: [
+            { userId: requesterId, role: ParticipantRole.MEMBER },
+            { userId: targetUser.id, role: ParticipantRole.MEMBER },
+          ],
+        },
+      },
+      include: this.getConversationInclude(),
+    });
+
+    this.logger.log(
+      `Created new DIRECT conversation: ${conversation.id} between ${requesterId} and ${targetUser.id}`,
+    );
+    return conversation;
+  }
+
+  /**
+   * Create a group conversation
+   */
+  async createGroup(
+    projectId: string,
+    requesterId: string,
+    dto: CreateGroupConversationDto,
+  ) {
+    // Deduplicate and filter out requester ID
+    const uniqueTargetIds = Array.from(
+      new Set(dto.participantIds.filter((id) => id !== requesterId)),
+    );
+
+    if (uniqueTargetIds.length === 0) {
+      throw new BadRequestException(
+        'At least one additional participant is required to create a group',
+      );
+    }
+
+    // Resolve all target participants in the same project
+    const targetUsers = await this.prisma.communicationUser.findMany({
+      where: {
+        projectId,
+        OR: [
+          { id: { in: uniqueTargetIds } },
+          { externalId: { in: uniqueTargetIds } },
+        ],
+      },
+    });
+
+    if (targetUsers.length !== uniqueTargetIds.length) {
+      throw new BadRequestException(
+        'One or more participant IDs are invalid or belong to another project',
+      );
+    }
+
+    const conversation = await this.prisma.conversation.create({
+      data: {
+        projectId,
+        type: ConversationType.GROUP,
+        title: dto.title.trim(),
+        avatar: dto.avatar || null,
+        participants: {
+          create: [
+            { userId: requesterId, role: ParticipantRole.ADMIN },
+            ...targetUsers.map((u) => ({
+              userId: u.id,
+              role: ParticipantRole.MEMBER,
+            })),
+          ],
+        },
+      },
+      include: this.getConversationInclude(),
+    });
+
+    this.logger.log(
+      `Created new GROUP conversation: ${conversation.id} (${conversation.title}) by creator ${requesterId}`,
+    );
+    return conversation;
+  }
+
+  /**
+   * Find conversations for the authenticated user in current project
+   */
+  async findUserConversations(
+    projectId: string,
+    userId: string,
+    query: QueryConversationsDto,
+  ) {
+    const page = Math.max(1, Number(query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(query.limit) || 20));
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      projectId,
+      participants: {
+        some: { userId },
+      },
+    };
+
+    if (query.search) {
+      where.OR = [
+        { title: { contains: query.search, mode: 'insensitive' } },
+        {
+          participants: {
+            some: {
+              user: {
+                name: { contains: query.search, mode: 'insensitive' },
+              },
+            },
+          },
+        },
+      ];
+    }
+
+    const [totalItems, data] = await Promise.all([
+      this.prisma.conversation.count({ where }),
+      this.prisma.conversation.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { updatedAt: 'desc' },
+        include: this.getConversationInclude(),
+      }),
+    ]);
+
+    const totalPages = Math.ceil(totalItems / limit) || 1;
+
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        totalItems,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    };
+  }
+
+  /**
+   * Find single conversation by ID with membership check
+   */
+  async findById(projectId: string, conversationId: string, userId: string) {
+    if (!conversationId || conversationId.length !== 24 || !/^[0-9a-fA-F]{24}$/.test(conversationId)) {
+      throw new NotFoundException('Conversation', conversationId);
+    }
+    const conversation = await this.prisma.conversation.findFirst({
+      where: {
+        id: conversationId,
+        projectId,
+      },
+      include: this.getConversationInclude(),
+    });
+
+    if (!conversation) {
+      throw new NotFoundException('Conversation', conversationId);
+    }
+
+    const isMember = conversation.participants.some((p) => p.userId === userId);
+    if (!isMember) {
+      throw new ForbiddenException(
+        'You are not a member of this conversation',
+      );
+    }
+
+    return conversation;
+  }
+
+  /**
+   * Get participants of a conversation
+   */
+  async getParticipants(
+    projectId: string,
+    conversationId: string,
+    userId: string,
+  ) {
+    // Validate conversation exists and requester is a participant
+    await this.findById(projectId, conversationId, userId);
+
+    return this.prisma.conversationParticipant.findMany({
+      where: {
+        conversationId,
+        conversation: {
+          projectId,
+        },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            externalId: true,
+            name: true,
+            email: true,
+            avatar: true,
+            isOnline: true,
+            lastSeenAt: true,
+          },
+        },
+      },
+      orderBy: { joinedAt: 'asc' },
+    });
+  }
+
+  /**
+   * Add participant to a GROUP conversation
+   */
+  async addParticipant(
+    projectId: string,
+    conversationId: string,
+    requesterId: string,
+    dto: AddParticipantDto,
+  ) {
+    const conversation = await this.prisma.conversation.findFirst({
+      where: {
+        id: conversationId,
+        projectId,
+      },
+      include: {
+        participants: true,
+      },
+    });
+
+    if (!conversation) {
+      throw new NotFoundException('Conversation', conversationId);
+    }
+
+    if (conversation.type !== ConversationType.GROUP) {
+      throw new BadRequestException(
+        'Cannot add participants to a direct conversation',
+      );
+    }
+
+    const requester = conversation.participants.find(
+      (p) => p.userId === requesterId,
+    );
+    if (!requester) {
+      throw new ForbiddenException(
+        'You are not a member of this conversation',
+      );
+    }
+
+    if (requester.role !== ParticipantRole.ADMIN) {
+      throw new ForbiddenException('Only group admins can add participants');
+    }
+
+    // Resolve target user in same project
+    const targetUser = await this.prisma.communicationUser.findFirst({
+      where: {
+        projectId,
+        OR: [{ id: dto.userId }, { externalId: dto.userId }],
+      },
+    });
+
+    if (!targetUser) {
+      throw new NotFoundException('CommunicationUser', dto.userId);
+    }
+
+    const alreadyParticipant = conversation.participants.some(
+      (p) => p.userId === targetUser.id,
+    );
+    if (alreadyParticipant) {
+      throw new ConflictException(
+        'User is already a participant in this conversation',
+      );
+    }
+
+    const participant = await this.prisma.conversationParticipant.create({
+      data: {
+        conversationId,
+        userId: targetUser.id,
+        role: dto.role || ParticipantRole.MEMBER,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            externalId: true,
+            name: true,
+            email: true,
+            avatar: true,
+            isOnline: true,
+            lastSeenAt: true,
+          },
+        },
+      },
+    });
+
+    await this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() },
+    });
+
+    this.logger.log(
+      `Added participant ${targetUser.name} (${targetUser.id}) to GROUP conversation ${conversationId}`,
+    );
+    return participant;
+  }
+
+  /**
+   * Remove participant from a GROUP conversation
+   */
+  async removeParticipant(
+    projectId: string,
+    conversationId: string,
+    requesterId: string,
+    targetUserId: string,
+  ) {
+    const conversation = await this.prisma.conversation.findFirst({
+      where: {
+        id: conversationId,
+        projectId,
+      },
+      include: {
+        participants: true,
+      },
+    });
+
+    if (!conversation) {
+      throw new NotFoundException('Conversation', conversationId);
+    }
+
+    if (conversation.type !== ConversationType.GROUP) {
+      throw new BadRequestException(
+        'Cannot remove participants from a direct conversation',
+      );
+    }
+
+    const requester = conversation.participants.find(
+      (p) => p.userId === requesterId,
+    );
+    if (!requester) {
+      throw new ForbiddenException(
+        'You are not a member of this conversation',
+      );
+    }
+
+    if (requester.role !== ParticipantRole.ADMIN) {
+      throw new ForbiddenException(
+        'Only group admins can remove participants',
+      );
+    }
+
+    const targetParticipant = conversation.participants.find(
+      (p) => p.userId === targetUserId || p.id === targetUserId,
+    );
+
+    if (!targetParticipant) {
+      throw new NotFoundException('Participant', targetUserId);
+    }
+
+    // Sole admin check: do not leave group with active members and zero admins
+    if (targetParticipant.role === ParticipantRole.ADMIN) {
+      const totalAdmins = conversation.participants.filter(
+        (p) => p.role === ParticipantRole.ADMIN,
+      ).length;
+      const totalMembers = conversation.participants.length;
+
+      if (totalAdmins === 1 && totalMembers > 1) {
+        throw new BadRequestException(
+          'Cannot remove the sole admin of a group with active members. Promote another admin first',
+        );
+      }
+    }
+
+    await this.prisma.conversationParticipant.delete({
+      where: { id: targetParticipant.id },
+    });
+
+    await this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() },
+    });
+
+    this.logger.log(
+      `Removed participant ${targetParticipant.userId} from conversation ${conversationId}`,
+    );
+    return {
+      message: 'Participant removed successfully',
+    };
+  }
+
+  /**
+   * Leave a conversation
+   */
+  async leaveConversation(
+    projectId: string,
+    conversationId: string,
+    requesterId: string,
+  ) {
+    const conversation = await this.prisma.conversation.findFirst({
+      where: {
+        id: conversationId,
+        projectId,
+      },
+      include: {
+        participants: true,
+      },
+    });
+
+    if (!conversation) {
+      throw new NotFoundException('Conversation', conversationId);
+    }
+
+    const requester = conversation.participants.find(
+      (p) => p.userId === requesterId,
+    );
+    if (!requester) {
+      throw new ForbiddenException(
+        'You are not a member of this conversation',
+      );
+    }
+
+    if (conversation.type === ConversationType.DIRECT) {
+      // For DIRECT, leave operation keeps record intact as required
+      return {
+        message: 'Left direct conversation successfully',
+      };
+    }
+
+    // For GROUP: handle sole admin safely
+    if (requester.role === ParticipantRole.ADMIN) {
+      const totalAdmins = conversation.participants.filter(
+        (p) => p.role === ParticipantRole.ADMIN,
+      ).length;
+      const remainingParticipants = conversation.participants.filter(
+        (p) => p.userId !== requesterId,
+      );
+
+      if (totalAdmins === 1 && remainingParticipants.length > 0) {
+        // Automatically promote the oldest remaining participant to ADMIN
+        const nextAdmin = remainingParticipants.sort(
+          (a, b) => a.joinedAt.getTime() - b.joinedAt.getTime(),
+        )[0];
+
+        await this.prisma.conversationParticipant.update({
+          where: { id: nextAdmin.id },
+          data: { role: ParticipantRole.ADMIN },
+        });
+
+        this.logger.log(
+          `Auto-promoted ${nextAdmin.userId} to ADMIN in conversation ${conversationId}`,
+        );
+      }
+    }
+
+    await this.prisma.conversationParticipant.delete({
+      where: { id: requester.id },
+    });
+
+    await this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() },
+    });
+
+    this.logger.log(
+      `User ${requesterId} left conversation ${conversationId}`,
+    );
+    return {
+      message: 'Left group conversation successfully',
+    };
+  }
+
+  /**
+   * Reusable query include definition
+   */
+  private getConversationInclude() {
+    return {
+      participants: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              externalId: true,
+              name: true,
+              email: true,
+              avatar: true,
+              isOnline: true,
+              lastSeenAt: true,
+            },
+          },
+        },
+        orderBy: { joinedAt: 'asc' as const },
+      },
+    };
+  }
+}

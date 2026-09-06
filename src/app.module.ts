@@ -32,6 +32,12 @@ import { AuthModule } from './app/auth/auth.module';
 import { AppController } from './app.controller';
 import { UserModule } from './app/modules/user/user.module';
 import { AdminModule } from './app/modules/admin/admin.module';
+import { ProjectModule } from './app/modules/project/project.module';
+import { CommunicationUserModule } from './app/modules/communication-user/communication-user.module';
+import { ConversationModule } from './app/modules/conversation/conversation.module';
+import { MessageModule } from './app/modules/message/message.module';
+import { MessageRequestModule } from './app/modules/message-request/message-request.module';
+import { RealtimeModule } from './app/modules/realtime/realtime.module';
 
 // Common Layer Providers
 import { AuthGuard } from './app/common/guards/auth.guard';
@@ -66,6 +72,12 @@ import { RequestIdMiddleware } from './app/common/middleware/request-id.middlewa
     AuthModule,
     UserModule,
     AdminModule,
+    ProjectModule,
+    CommunicationUserModule,
+    MessageModule,
+    ConversationModule,
+    MessageRequestModule,
+    RealtimeModule,
   ],
   controllers: [AppController],
   providers: [

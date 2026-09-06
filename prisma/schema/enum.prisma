@@ -17,3 +17,34 @@ enum TokenType {
   OTP
   REFRESH_TOKEN
 }
+
+enum ProjectStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum ConversationType {
+  DIRECT
+  GROUP
+}
+
+enum ParticipantRole {
+  MEMBER
+  ADMIN
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  VIDEO
+  AUDIO
+  FILE
+  SYSTEM
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}

@@ -43,10 +43,31 @@ async function bootstrap() {
   const corsFn = (cors as any).default || cors;
   app.use(
     corsFn({
-      origin: corsOrigins,
+      origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+        if (
+          !origin ||
+          corsOrigins.includes(origin) ||
+          /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+        ) {
+          callback(null, true);
+        } else {
+          callback(new Error(`Origin ${origin} not allowed by CORS`));
+        }
+      },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'x-request-id'],
+      allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With',
+        'Accept',
+        'x-request-id',
+        'x-project-id',
+        'x-api-key',
+        'x-user-id',
+        'x-external-id',
+      ],
+      exposedHeaders: ['x-request-id', 'x-project-id'],
     }),
   );
 
