@@ -39,3 +39,4 @@ Thumbs.db
 *.tsbuildinfo
 .temp
 .cache
+.vercel

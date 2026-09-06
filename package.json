@@ -5,9 +5,12 @@
   "author": "James Dragon",
   "private": true,
   "license": "MIT",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "nest start -b swc --watch",
-    "build": "nest build",
+    "build": "prisma generate --schema=prisma/schema && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start -b swc",
     "start:dev": "nest start -b swc --watch",
