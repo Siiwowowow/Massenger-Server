@@ -7,46 +7,12 @@ const cors = require('cors');
 
 let cachedServer = null;
 
-// Neutralize Express 4 deprecation getter on the application prototype if Express 4 is resolved
-try {
-  const express = require('express');
-  if (express && express.application) {
-    const desc = Object.getOwnPropertyDescriptor(express.application, 'router');
-    if (!desc || desc.configurable) {
-      Object.defineProperty(express.application, 'router', {
-        get() {
-          return this._router;
-        },
-        set(val) {
-          this._router = val;
-        },
-        configurable: true,
-      });
-    }
-  }
-} catch {
-  // Ignore
-}
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
   });
 
   const server = app.getHttpAdapter().getInstance();
-
-  // Neutralize Express 4 deprecation getter that conflicts with NestJS 11
-  if (server) {
-    Object.defineProperty(server, 'router', {
-      get() {
-        return this._router;
-      },
-      set(val) {
-        this._router = val;
-      },
-      configurable: true,
-    });
-  }
 
   const apiPrefix = process.env.API_PREFIX || 'api/v1';
   const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:5173')

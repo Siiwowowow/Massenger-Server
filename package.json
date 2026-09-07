@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "nest start -b swc --watch",
-    "build": "prisma generate --schema=prisma/schema && nest build",
+    "build": "prisma generate --schema=prisma/schema && nest build && node scripts/copy-prisma-engines.js",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start -b swc",
     "start:dev": "nest start -b swc --watch",
