@@ -14,7 +14,10 @@ import { auth } from '../auth/better-auth.instance';
       driver: ApolloDriver,
       inject: [PrismaService],
       useFactory: async (prisma: PrismaService): Promise<ApolloDriverConfig> => ({
-        autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+        autoSchemaFile:
+          process.env.VERCEL || process.env.NODE_ENV === 'production'
+            ? true
+            : join(process.cwd(), 'src/schema.gql'),
         sortSchema: true,
         playground: false,
         plugins: [

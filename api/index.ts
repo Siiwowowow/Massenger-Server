@@ -1,26 +1,53 @@
+import process from 'node:process';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../src/app.module';
-import { ExpressAdapter } from '@nestjs/platform-express';
-import express, { Request, Response } from 'express';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 
-const server = express();
-let cachedServer: express.Express | null = null;
+let cachedServer: any = null;
 
-async function bootstrapServer(): Promise<express.Express> {
-  if (cachedServer) {
-    return cachedServer;
+// Neutralize Express 4 deprecation getter on the application prototype if Express 4 is resolved
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const express = require('express');
+  if (express && express.application) {
+    const desc = Object.getOwnPropertyDescriptor(express.application, 'router');
+    if (!desc || desc.configurable) {
+      Object.defineProperty(express.application, 'router', {
+        get() {
+          return this._router;
+        },
+        set(val: any) {
+          this._router = val;
+        },
+        configurable: true,
+      });
+    }
   }
+} catch {
+  // Ignore
+}
 
-  const app = await NestFactory.create(
-    AppModule,
-    new ExpressAdapter(server),
-    {
-      bufferLogs: true,
-    },
-  );
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+  });
+
+  const server = app.getHttpAdapter().getInstance();
+
+  // Neutralize Express 4 deprecation getter that conflicts with NestJS 11
+  if (server) {
+    Object.defineProperty(server, 'router', {
+      get() {
+        return (this as any)._router;
+      },
+      set(val: any) {
+        (this as any)._router = val;
+      },
+      configurable: true,
+    });
+  }
 
   const apiPrefix = process.env.API_PREFIX || 'api/v1';
   const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:5173')
@@ -89,11 +116,12 @@ async function bootstrapServer(): Promise<express.Express> {
   });
 
   await app.init();
-  cachedServer = server;
-  return cachedServer;
+  return server;
 }
 
-export default async function handler(req: Request, res: Response) {
-  const expressApp = await bootstrapServer();
-  expressApp(req, res);
+export default async function handler(req: any, res: any) {
+  if (!cachedServer) {
+    cachedServer = await bootstrap();
+  }
+  cachedServer(req, res);
 }
