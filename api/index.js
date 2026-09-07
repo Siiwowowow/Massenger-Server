@@ -1,15 +1,14 @@
-import process from 'node:process';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../src/app.module';
-import helmet from 'helmet';
-import cookieParser from 'cookie-parser';
-import cors from 'cors';
+const process = require('node:process');
+const { NestFactory } = require('@nestjs/core');
+const { AppModule } = require('../dist/app.module');
+const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
-let cachedServer: any = null;
+let cachedServer = null;
 
 // Neutralize Express 4 deprecation getter on the application prototype if Express 4 is resolved
 try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const express = require('express');
   if (express && express.application) {
     const desc = Object.getOwnPropertyDescriptor(express.application, 'router');
@@ -18,7 +17,7 @@ try {
         get() {
           return this._router;
         },
-        set(val: any) {
+        set(val) {
           this._router = val;
         },
         configurable: true,
@@ -40,10 +39,10 @@ async function bootstrap() {
   if (server) {
     Object.defineProperty(server, 'router', {
       get() {
-        return (this as any)._router;
+        return this._router;
       },
-      set(val: any) {
-        (this as any)._router = val;
+      set(val) {
+        this._router = val;
       },
       configurable: true,
     });
@@ -55,7 +54,7 @@ async function bootstrap() {
     .map((o) => o.trim());
 
   // Security headers with Apollo Sandbox compatibility
-  const helmetFn = (helmet as any).default || helmet;
+  const helmetFn = helmet.default || helmet;
   app.use(
     helmetFn({
       crossOriginEmbedderPolicy: false,
@@ -75,14 +74,14 @@ async function bootstrap() {
   );
 
   // Cookie parser
-  const cookieMiddleware = (cookieParser as any).default || cookieParser;
+  const cookieMiddleware = cookieParser.default || cookieParser;
   app.use(cookieMiddleware(process.env.COOKIE_SECRET || 'secret'));
 
   // CORS configuration
-  const corsFn = (cors as any).default || cors;
+  const corsFn = cors.default || cors;
   app.use(
     corsFn({
-      origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      origin: (origin, callback) => {
         if (
           !origin ||
           corsOrigins.includes(origin) ||
@@ -119,9 +118,9 @@ async function bootstrap() {
   return server;
 }
 
-export default async function handler(req: any, res: any) {
+module.exports = async function handler(req, res) {
   if (!cachedServer) {
     cachedServer = await bootstrap();
   }
   cachedServer(req, res);
-}
+};
