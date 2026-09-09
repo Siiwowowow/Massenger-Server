@@ -99,3 +99,80 @@ export interface TypingStoppedPayload {
   userId: string;
 }
 
+// =========================================================================
+// Phase 2: Call Signaling Payload Types
+// =========================================================================
+
+export type RealtimeCallType = 'VIDEO' | 'AUDIO';
+
+export interface CallStartPayload {
+  conversationId: string;
+  callType?: RealtimeCallType;
+}
+
+export interface CallAcceptPayload {
+  callId: string;
+}
+
+export interface CallRejectPayload {
+  callId: string;
+}
+
+export interface CallCancelPayload {
+  callId: string;
+}
+
+export interface CallEndPayload {
+  callId: string;
+}
+
+export interface CallIncomingPayload {
+  callId: string;
+  conversationId: string;
+  caller: {
+    id: string;
+    externalId: string;
+    name: string;
+    avatar?: string | null;
+  };
+  callType: RealtimeCallType;
+}
+
+export interface CallAcceptedPayload {
+  callId: string;
+  conversationId: string;
+  acceptedBy: string;
+}
+
+export interface CallRejectedPayload {
+  callId: string;
+  conversationId: string;
+  rejectedBy: string;
+}
+
+export interface CallCancelledPayload {
+  callId: string;
+  conversationId: string;
+  cancelledBy: string;
+}
+
+export interface CallEndedPayload {
+  callId: string;
+  conversationId: string;
+  endedBy: string;
+  reason?: string;
+}
+
+export interface CallBusyPayload {
+  callId: string;
+  conversationId: string;
+  userId: string;
+  reason: string;
+}
+
+export interface CallErrorPayload {
+  code: RealtimeErrorCode | string;
+  message: string;
+  callId?: string;
+}
+

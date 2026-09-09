@@ -64,6 +64,11 @@ export const envSchema = z.object({
   RATE_LIMIT_TTL: z.coerce.number().default(60),
   RATE_LIMIT_MAX: z.coerce.number().default(100),
   CORS_ORIGINS: z.string().default('http://localhost:3000,http://localhost:5173'),
+
+  // LiveKit (Audio/Video Calling)
+  LIVEKIT_URL: z.string().default('ws://localhost:7880'),
+  LIVEKIT_API_KEY: z.string().default('devkey'),
+  LIVEKIT_API_SECRET: z.string().default('secret'),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

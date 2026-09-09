@@ -7,6 +7,7 @@ import { ConversationModule } from '../conversation/conversation.module';
 import { MessageModule } from '../message/message.module';
 import { PresenceModule } from './presence/presence.module';
 import { TypingModule } from './typing/typing.module';
+import { CallModule } from '../call/call.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { TypingModule } from './typing/typing.module';
     MessageModule,
     PresenceModule,
     TypingModule,
+    CallModule,
   ],
   providers: [RealtimeGateway, WsAuthGuard],
   exports: [RealtimeGateway, WsAuthGuard, PresenceModule, TypingModule],

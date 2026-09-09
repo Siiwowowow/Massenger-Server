@@ -12,6 +12,7 @@ import {
   emailConfig,
   graphqlConfig,
   securityConfig,
+  livekitConfig,
 } from './app/config';
 
 // Database & Infrastructure
@@ -38,6 +39,7 @@ import { ConversationModule } from './app/modules/conversation/conversation.modu
 import { MessageModule } from './app/modules/message/message.module';
 import { MessageRequestModule } from './app/modules/message-request/message-request.module';
 import { RealtimeModule } from './app/modules/realtime/realtime.module';
+import { CallModule } from './app/modules/call/call.module';
 
 // Common Layer Providers
 import { AuthGuard } from './app/common/guards/auth.guard';
@@ -59,6 +61,7 @@ import { RequestIdMiddleware } from './app/common/middleware/request-id.middlewa
         emailConfig,
         graphqlConfig,
         securityConfig,
+        livekitConfig,
       ],
       validate: validateEnv,
     }),
@@ -78,6 +81,7 @@ import { RequestIdMiddleware } from './app/common/middleware/request-id.middlewa
     ConversationModule,
     MessageRequestModule,
     RealtimeModule,
+    CallModule,
   ],
   controllers: [AppController],
   providers: [

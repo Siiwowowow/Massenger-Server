@@ -35,7 +35,21 @@ import {
   BulkConversationReadPayload,
   TypingStartPayload,
   TypingStopPayload,
+  CallStartPayload,
+  CallAcceptPayload,
+  CallRejectPayload,
+  CallCancelPayload,
+  CallEndPayload,
+  CallIncomingPayload,
+  CallAcceptedPayload,
+  CallRejectedPayload,
+  CallCancelledPayload,
+  CallEndedPayload,
+  CallBusyPayload,
+  CallErrorPayload,
 } from './realtime.types';
+import { CallSignalingService } from '../call/call-signaling.service';
+import { CallState } from '../call/call.types';
 import {
   AppException,
   UnauthorizedException,
@@ -74,6 +88,7 @@ export class RealtimeGateway
     private readonly messageReceiptService: MessageReceiptService,
     private readonly presenceService: PresenceService,
     private readonly typingService: TypingService,
+    private readonly callSignalingService: CallSignalingService,
   ) {}
 
   /**
@@ -94,6 +109,22 @@ export class RealtimeGateway
         error.data = errorAck;
         next(error);
       }
+    });
+
+    // Phase 2: Call ringing timeout notification
+    this.callSignalingService.onCallTimeout((call) => {
+      const payload: CallEndedPayload = {
+        callId: call.id,
+        conversationId: call.conversationId,
+        endedBy: 'system',
+        reason: 'TIMEOUT',
+      };
+      this.server
+        .to(REALTIME_ROOMS.user(call.callerId))
+        .emit(REALTIME_EVENTS.SERVER.CALL_ENDED, payload);
+      this.server
+        .to(REALTIME_ROOMS.user(call.receiverId))
+        .emit(REALTIME_EVENTS.SERVER.CALL_ENDED, payload);
     });
   }
 
@@ -927,6 +958,313 @@ export class RealtimeGateway
       this.server.to(REALTIME_ROOMS.user(payload.receiverId)).emit('request:cancelled', {
         requestId: payload.requestId,
       });
+    }
+  }
+
+  // =========================================================================
+  // 6. PHASE 2: CALL SIGNALING (START, ACCEPT, REJECT, CANCEL, END)
+  // =========================================================================
+
+  /**
+   * Client initiates a 1-to-1 call
+   */
+  @UseGuards(WsAuthGuard)
+  @SubscribeMessage(REALTIME_EVENTS.CLIENT.CALL_START)
+  async handleCallStart(
+    @ConnectedSocket() socket: AuthenticatedSocket,
+    @MessageBody() payload: CallStartPayload,
+  ): Promise<RealtimeAckResponse> {
+    const project = socket.data.project;
+    const user = socket.data.communicationUser;
+
+    try {
+      if (!payload || !payload.conversationId || !isValidObjectId(payload.conversationId)) {
+        throw new BadRequestException('Valid conversationId is required');
+      }
+
+      const result = await this.callSignalingService.startCall(
+        project.id,
+        user,
+        payload.conversationId,
+        payload.callType,
+      );
+
+      if (result.isBusy) {
+        const busyPayload: CallBusyPayload = {
+          callId: result.callId,
+          conversationId: result.conversationId,
+          userId: result.receiverId,
+          reason: 'Participant is currently busy on another call',
+        };
+
+        socket.emit(REALTIME_EVENTS.SERVER.CALL_BUSY, busyPayload);
+
+        return {
+          success: true,
+          data: {
+            callId: result.callId,
+            conversationId: result.conversationId,
+            status: CallState.BUSY,
+            busyUserId: result.receiverId,
+          },
+        };
+      }
+
+      // Receiver is available -> emit call:incoming to receiver's user room
+      const incomingPayload: CallIncomingPayload = {
+        callId: result.call.id,
+        conversationId: result.call.conversationId,
+        caller: {
+          id: user.id,
+          externalId: user.externalId,
+          name: user.name,
+          avatar: user.avatar,
+        },
+        callType: result.call.callType,
+      };
+
+      this.server
+        .to(REALTIME_ROOMS.user(result.call.receiverId))
+        .emit(REALTIME_EVENTS.SERVER.CALL_INCOMING, incomingPayload);
+
+      return {
+        success: true,
+        data: {
+          callId: result.call.id,
+          conversationId: result.call.conversationId,
+          status: result.call.status,
+        },
+      };
+    } catch (err: unknown) {
+      const errorAck = this.formatError(err);
+      const errorPayload: CallErrorPayload = {
+        code: errorAck.error.code,
+        message: errorAck.error.message,
+      };
+      socket.emit(REALTIME_EVENTS.SERVER.CALL_ERROR, errorPayload);
+      return errorAck;
+    }
+  }
+
+  /**
+   * Receiver accepts an incoming ringing call
+   */
+  @UseGuards(WsAuthGuard)
+  @SubscribeMessage(REALTIME_EVENTS.CLIENT.CALL_ACCEPT)
+  async handleCallAccept(
+    @ConnectedSocket() socket: AuthenticatedSocket,
+    @MessageBody() payload: CallAcceptPayload,
+  ): Promise<RealtimeAckResponse> {
+    const project = socket.data.project;
+    const user = socket.data.communicationUser;
+
+    try {
+      if (!payload || !payload.callId) {
+        throw new BadRequestException('callId is required');
+      }
+
+      const call = await this.callSignalingService.acceptCall(
+        project.id,
+        user.id,
+        payload.callId,
+      );
+
+      const eventPayload: CallAcceptedPayload = {
+        callId: call.id,
+        conversationId: call.conversationId,
+        acceptedBy: user.id,
+      };
+
+      // Notify caller
+      this.server
+        .to(REALTIME_ROOMS.user(call.callerId))
+        .emit(REALTIME_EVENTS.SERVER.CALL_ACCEPTED, eventPayload);
+
+      // Notify other devices of receiver so they stop ringing
+      this.server
+        .to(REALTIME_ROOMS.user(call.receiverId))
+        .emit(REALTIME_EVENTS.SERVER.CALL_ACCEPTED, eventPayload);
+
+      return {
+        success: true,
+        data: {
+          callId: call.id,
+          status: call.status,
+        },
+      };
+    } catch (err: unknown) {
+      const errorAck = this.formatError(err);
+      const errorPayload: CallErrorPayload = {
+        code: errorAck.error.code,
+        message: errorAck.error.message,
+        callId: payload?.callId,
+      };
+      socket.emit(REALTIME_EVENTS.SERVER.CALL_ERROR, errorPayload);
+      return errorAck;
+    }
+  }
+
+  /**
+   * Receiver rejects an incoming ringing call
+   */
+  @UseGuards(WsAuthGuard)
+  @SubscribeMessage(REALTIME_EVENTS.CLIENT.CALL_REJECT)
+  async handleCallReject(
+    @ConnectedSocket() socket: AuthenticatedSocket,
+    @MessageBody() payload: CallRejectPayload,
+  ): Promise<RealtimeAckResponse> {
+    const project = socket.data.project;
+    const user = socket.data.communicationUser;
+
+    try {
+      if (!payload || !payload.callId) {
+        throw new BadRequestException('callId is required');
+      }
+
+      const call = await this.callSignalingService.rejectCall(
+        project.id,
+        user.id,
+        payload.callId,
+      );
+
+      const eventPayload: CallRejectedPayload = {
+        callId: call.id,
+        conversationId: call.conversationId,
+        rejectedBy: user.id,
+      };
+
+      this.server
+        .to(REALTIME_ROOMS.user(call.callerId))
+        .emit(REALTIME_EVENTS.SERVER.CALL_REJECTED, eventPayload);
+
+      this.server
+        .to(REALTIME_ROOMS.user(call.receiverId))
+        .emit(REALTIME_EVENTS.SERVER.CALL_REJECTED, eventPayload);
+
+      return {
+        success: true,
+        data: {
+          callId: call.id,
+          status: CallState.REJECTED,
+        },
+      };
+    } catch (err: unknown) {
+      const errorAck = this.formatError(err);
+      const errorPayload: CallErrorPayload = {
+        code: errorAck.error.code,
+        message: errorAck.error.message,
+        callId: payload?.callId,
+      };
+      socket.emit(REALTIME_EVENTS.SERVER.CALL_ERROR, errorPayload);
+      return errorAck;
+    }
+  }
+
+  /**
+   * Caller cancels a ringing call before pickup
+   */
+  @UseGuards(WsAuthGuard)
+  @SubscribeMessage(REALTIME_EVENTS.CLIENT.CALL_CANCEL)
+  async handleCallCancel(
+    @ConnectedSocket() socket: AuthenticatedSocket,
+    @MessageBody() payload: CallCancelPayload,
+  ): Promise<RealtimeAckResponse> {
+    const project = socket.data.project;
+    const user = socket.data.communicationUser;
+
+    try {
+      if (!payload || !payload.callId) {
+        throw new BadRequestException('callId is required');
+      }
+
+      const call = await this.callSignalingService.cancelCall(
+        project.id,
+        user.id,
+        payload.callId,
+      );
+
+      const eventPayload: CallCancelledPayload = {
+        callId: call.id,
+        conversationId: call.conversationId,
+        cancelledBy: user.id,
+      };
+
+      this.server
+        .to(REALTIME_ROOMS.user(call.receiverId))
+        .emit(REALTIME_EVENTS.SERVER.CALL_CANCELLED, eventPayload);
+
+      return {
+        success: true,
+        data: {
+          callId: call.id,
+          status: CallState.CANCELLED,
+        },
+      };
+    } catch (err: unknown) {
+      const errorAck = this.formatError(err);
+      const errorPayload: CallErrorPayload = {
+        code: errorAck.error.code,
+        message: errorAck.error.message,
+        callId: payload?.callId,
+      };
+      socket.emit(REALTIME_EVENTS.SERVER.CALL_ERROR, errorPayload);
+      return errorAck;
+    }
+  }
+
+  /**
+   * Participant terminates an active or ringing call
+   */
+  @UseGuards(WsAuthGuard)
+  @SubscribeMessage(REALTIME_EVENTS.CLIENT.CALL_END)
+  async handleCallEnd(
+    @ConnectedSocket() socket: AuthenticatedSocket,
+    @MessageBody() payload: CallEndPayload,
+  ): Promise<RealtimeAckResponse> {
+    const project = socket.data.project;
+    const user = socket.data.communicationUser;
+
+    try {
+      if (!payload || !payload.callId) {
+        throw new BadRequestException('callId is required');
+      }
+
+      const call = await this.callSignalingService.endCall(
+        project.id,
+        user.id,
+        payload.callId,
+      );
+
+      const eventPayload: CallEndedPayload = {
+        callId: call.id,
+        conversationId: call.conversationId,
+        endedBy: user.id,
+      };
+
+      this.server
+        .to(REALTIME_ROOMS.user(call.callerId))
+        .emit(REALTIME_EVENTS.SERVER.CALL_ENDED, eventPayload);
+
+      this.server
+        .to(REALTIME_ROOMS.user(call.receiverId))
+        .emit(REALTIME_EVENTS.SERVER.CALL_ENDED, eventPayload);
+
+      return {
+        success: true,
+        data: {
+          callId: call.id,
+          status: CallState.ENDED,
+        },
+      };
+    } catch (err: unknown) {
+      const errorAck = this.formatError(err);
+      const errorPayload: CallErrorPayload = {
+        code: errorAck.error.code,
+        message: errorAck.error.message,
+        callId: payload?.callId,
+      };
+      socket.emit(REALTIME_EVENTS.SERVER.CALL_ERROR, errorPayload);
+      return errorAck;
     }
   }
 }
