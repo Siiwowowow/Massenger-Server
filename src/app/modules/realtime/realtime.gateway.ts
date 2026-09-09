@@ -69,7 +69,10 @@ import { TypingService } from './typing/typing.service';
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean | string) => void) => {
+      // Dynamic origin reflection allows browsers to accept credentials with Socket.IO
+      callback(null, true);
+    },
     credentials: true,
   },
 })

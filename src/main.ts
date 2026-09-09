@@ -11,7 +11,10 @@ async function bootstrap() {
 
   const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
   const apiPrefix = process.env.API_PREFIX || 'api/v1';
-  const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:5173')
+  const corsOrigins = (
+    process.env.CORS_ORIGINS ||
+    'http://localhost:3000,http://localhost:5173,https://massange-fontend.vercel.app'
+  )
     .split(',')
     .map((o) => o.trim());
 
@@ -44,11 +47,25 @@ async function bootstrap() {
   app.use(
     corsFn({
       origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-        if (
-          !origin ||
-          corsOrigins.includes(origin) ||
-          /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
-        ) {
+        let isAllowed = false;
+        if (!origin) {
+          isAllowed = true;
+        } else if (corsOrigins.includes(origin)) {
+          isAllowed = true;
+        } else if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+          isAllowed = true;
+        } else {
+          try {
+            const parsedUrl = new URL(origin);
+            if (parsedUrl.hostname.endsWith('vercel.app')) {
+              isAllowed = true;
+            }
+          } catch {
+            isAllowed = false;
+          }
+        }
+
+        if (isAllowed) {
           callback(null, true);
         } else {
           callback(new Error(`Origin ${origin} not allowed by CORS`));
