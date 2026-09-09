@@ -79,7 +79,7 @@ async function bootstrap() {
   // Enable graceful shutdown
   app.enableShutdownHooks();
 
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 
   const reset = '\x1b[0m';
   const cyan = '\x1b[36m';
