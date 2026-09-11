@@ -984,6 +984,9 @@ export class RealtimeGateway
       if (!payload || !payload.conversationId || !isValidObjectId(payload.conversationId)) {
         throw new BadRequestException('Valid conversationId is required');
       }
+      if (payload.callType !== undefined && payload.callType !== 'AUDIO' && payload.callType !== 'VIDEO') {
+        throw new BadRequestException('callType must be AUDIO or VIDEO');
+      }
 
       const result = await this.callSignalingService.startCall(
         project.id,
