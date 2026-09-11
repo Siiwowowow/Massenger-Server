@@ -11,12 +11,17 @@ async function bootstrap() {
 
   const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
   const apiPrefix = process.env.API_PREFIX || 'api/v1';
-  const corsOrigins = (
-    process.env.CORS_ORIGINS ||
-    'http://localhost:3000,http://localhost:5173,https://massange-fontend.vercel.app'
-  )
-    .split(',')
-    .map((o) => o.trim());
+  const corsOrigins = [
+    ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : []),
+    ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : []),
+    ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : []),
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://massange-fontend.vercel.app',
+    'https://massage-backend-rouge.vercel.app',
+  ]
+    .map((o) => o.trim())
+    .filter(Boolean);
 
   // Security headers with Apollo Sandbox compatibility
   const helmetFn = (helmet as any).default || helmet;
@@ -57,7 +62,7 @@ async function bootstrap() {
         } else {
           try {
             const parsedUrl = new URL(origin);
-            if (parsedUrl.hostname.endsWith('vercel.app')) {
+            if (parsedUrl.hostname.endsWith('.vercel.app') || parsedUrl.hostname === 'vercel.app') {
               isAllowed = true;
             }
           } catch {
@@ -68,10 +73,12 @@ async function bootstrap() {
         if (isAllowed) {
           callback(null, true);
         } else {
-          callback(new Error(`Origin ${origin} not allowed by CORS`));
+          // Do not pass Error to callback, as Express will return 500 error
+          callback(null, false);
         }
       },
       credentials: true,
+      optionsSuccessStatus: 204,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: [
         'Content-Type',

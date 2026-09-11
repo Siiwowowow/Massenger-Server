@@ -6,7 +6,34 @@ import { PrismaClient } from '../../generated/prisma';
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 const prisma = globalForPrisma.prisma || new PrismaClient();
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+globalForPrisma.prisma = prisma;
+
+const defaultTrustedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:5000',
+  'https://massange-fontend.vercel.app',
+  'https://massage-backend-rouge.vercel.app',
+  'https://*.vercel.app',
+];
+
+const envTrustedOrigins = [
+  ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : []),
+  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : []),
+  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : []),
+]
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+const trustedOrigins = Array.from(new Set([...defaultTrustedOrigins, ...envTrustedOrigins]));
+
+const baseURL =
+  process.env.BETTER_AUTH_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.APP_URL || 'http://localhost:5000');
 
 const hasGoogleAuth =
   Boolean(process.env.GOOGLE_CLIENT_ID) && Boolean(process.env.GOOGLE_CLIENT_SECRET);
@@ -64,14 +91,8 @@ export const auth = betterAuth({
     },
   },
   secret: process.env.BETTER_AUTH_SECRET || '5FIb92Cbf6aXqy1Yjm8lB61zhVbDPwJv',
-  baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5000',
-  trustedOrigins: (
-    process.env.CORS_ORIGINS ||
-    process.env.FRONTEND_URL ||
-    'http://localhost:3000,http://localhost:5173'
-  )
-    .split(',')
-    .map((o) => o.trim()),
+  baseURL,
+  trustedOrigins,
 });
 
 export type Auth = typeof auth;

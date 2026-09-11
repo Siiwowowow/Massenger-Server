@@ -1,3 +1,4 @@
+/* eslint-disable */
 const process = require('node:process');
 const { NestFactory } = require('@nestjs/core');
 const { AppModule } = require('../dist/app.module');
@@ -5,7 +6,22 @@ const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
-let cachedServer = null;
+let cachedServerPromise = null;
+
+function isOriginAllowed(origin, configuredOrigins) {
+  if (!origin) return true;
+  if (configuredOrigins.includes(origin)) return true;
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
+  try {
+    const url = new URL(origin);
+    if (url.hostname.endsWith('.vercel.app') || url.hostname === 'vercel.app') {
+      return true;
+    }
+  } catch {
+    // Ignore invalid origin URL parse
+  }
+  return false;
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -15,9 +31,17 @@ async function bootstrap() {
   const server = app.getHttpAdapter().getInstance();
 
   const apiPrefix = process.env.API_PREFIX || 'api/v1';
-  const corsOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:5173')
-    .split(',')
-    .map((o) => o.trim());
+  const configuredOrigins = [
+    ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : []),
+    ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : []),
+    ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : []),
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://massange-fontend.vercel.app',
+    'https://massage-backend-rouge.vercel.app',
+  ]
+    .map((o) => o.trim())
+    .filter(Boolean);
 
   // Security headers with Apollo Sandbox compatibility
   const helmetFn = helmet.default || helmet;
@@ -48,17 +72,15 @@ async function bootstrap() {
   app.use(
     corsFn({
       origin: (origin, callback) => {
-        if (
-          !origin ||
-          corsOrigins.includes(origin) ||
-          /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
-        ) {
+        if (isOriginAllowed(origin, configuredOrigins)) {
           callback(null, true);
         } else {
-          callback(new Error(`Origin ${origin} not allowed by CORS`));
+          // Do not pass Error to callback, as Express will return 500 error
+          callback(null, false);
         }
       },
       credentials: true,
+      optionsSuccessStatus: 204,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: [
         'Content-Type',
@@ -85,8 +107,9 @@ async function bootstrap() {
 }
 
 module.exports = async function handler(req, res) {
-  if (!cachedServer) {
-    cachedServer = await bootstrap();
+  if (!cachedServerPromise) {
+    cachedServerPromise = bootstrap();
   }
-  cachedServer(req, res);
+  const server = await cachedServerPromise;
+  return server(req, res);
 };

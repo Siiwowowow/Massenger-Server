@@ -3,9 +3,18 @@ import { Response, Request, CookieOptions } from 'express';
 export class CookieUtil {
   private static defaultOptions: CookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: (process.env.COOKIE_SAME_SITE as 'lax' | 'strict' | 'none') || 'lax',
+    secure:
+      process.env.COOKIE_SECURE === 'true' ||
+      (process.env.COOKIE_SECURE !== 'false' && process.env.NODE_ENV === 'production'),
+    sameSite: (process.env.COOKIE_SAME_SITE ||
+      (process.env.NODE_ENV === 'production' ? 'none' : 'lax')) as
+      | 'lax'
+      | 'strict'
+      | 'none',
     path: '/',
+    ...(process.env.COOKIE_DOMAIN && process.env.COOKIE_DOMAIN !== 'localhost'
+      ? { domain: process.env.COOKIE_DOMAIN }
+      : {}),
   };
 
   static set(

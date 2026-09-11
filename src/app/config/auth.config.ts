@@ -7,8 +7,14 @@ export const authConfig = registerAs('auth', () => ({
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   cookie: {
     secret: process.env.COOKIE_SECRET || 'default-cookie-secret-min-32-chars-long-12345',
-    domain: process.env.COOKIE_DOMAIN || 'localhost',
-    secure: process.env.COOKIE_SECURE === 'true',
-    sameSite: (process.env.COOKIE_SAME_SITE || 'lax') as 'lax' | 'strict' | 'none',
+    domain: process.env.COOKIE_DOMAIN || undefined,
+    secure:
+      process.env.COOKIE_SECURE === 'true' ||
+      (process.env.COOKIE_SECURE !== 'false' && process.env.NODE_ENV === 'production'),
+    sameSite: (process.env.COOKIE_SAME_SITE ||
+      (process.env.NODE_ENV === 'production' ? 'none' : 'lax')) as
+      | 'lax'
+      | 'strict'
+      | 'none',
   },
 }));

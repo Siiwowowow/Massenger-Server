@@ -22,9 +22,9 @@ export const envSchema = z.object({
   GOOGLE_CALLBACK_URL: z.string().optional(),
 
   COOKIE_SECRET: z.string().default('default-cookie-secret-min-32-chars-long-12345'),
-  COOKIE_DOMAIN: z.string().default('localhost'),
-  COOKIE_SECURE: z.preprocess((val) => val === 'true' || val === true, z.boolean()).default(false),
-  COOKIE_SAME_SITE: z.enum(['lax', 'strict', 'none']).default('lax'),
+  COOKIE_DOMAIN: z.string().optional(),
+  COOKIE_SECURE: z.preprocess((val) => val === 'true' || val === true, z.boolean()).optional(),
+  COOKIE_SAME_SITE: z.enum(['lax', 'strict', 'none']).optional(),
 
   JWT_SECRET: z.string().optional(),
   ACCESS_TOKEN_SECRET: z.string().optional(),
@@ -63,7 +63,11 @@ export const envSchema = z.object({
 
   RATE_LIMIT_TTL: z.coerce.number().default(60),
   RATE_LIMIT_MAX: z.coerce.number().default(100),
-  CORS_ORIGINS: z.string().default('http://localhost:3000,http://localhost:5173'),
+  CORS_ORIGINS: z
+    .string()
+    .default(
+      'http://localhost:3000,http://localhost:5173,https://massange-fontend.vercel.app,https://massage-backend-rouge.vercel.app',
+    ),
 
   // LiveKit (Audio/Video Calling)
   LIVEKIT_URL: z.string().default('ws://localhost:7880'),
