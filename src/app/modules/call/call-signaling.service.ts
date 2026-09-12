@@ -261,7 +261,19 @@ export class CallSignalingService implements OnModuleDestroy {
   ): Promise<CallSession> {
     const call = await this.callStore.getCall(callId);
     if (!call || call.projectId !== projectId) {
-      throw new NotFoundException('Call', callId);
+      this.logger.warn(`Attempted to reject call ${callId} which was not found (already ended or timed out).`);
+      return {
+        id: callId,
+        projectId,
+        conversationId: '',
+        callerId: '',
+        receiverId: userId,
+        status: CallState.REJECTED,
+        callType: 'VIDEO',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        endedAt: new Date(),
+      };
     }
 
     if (call.receiverId !== userId) {
@@ -294,7 +306,19 @@ export class CallSignalingService implements OnModuleDestroy {
   ): Promise<CallSession> {
     const call = await this.callStore.getCall(callId);
     if (!call || call.projectId !== projectId) {
-      throw new NotFoundException('Call', callId);
+      this.logger.warn(`Attempted to cancel call ${callId} which was not found (already ended or timed out).`);
+      return {
+        id: callId,
+        projectId,
+        conversationId: '',
+        callerId: userId,
+        receiverId: '',
+        status: CallState.CANCELLED,
+        callType: 'VIDEO',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        endedAt: new Date(),
+      };
     }
 
     if (call.callerId !== userId) {
@@ -325,7 +349,19 @@ export class CallSignalingService implements OnModuleDestroy {
   ): Promise<CallSession> {
     const call = await this.callStore.getCall(callId);
     if (!call || call.projectId !== projectId) {
-      throw new NotFoundException('Call', callId);
+      this.logger.warn(`Attempted to end call ${callId} which was not found (already ended or timed out).`);
+      return {
+        id: callId,
+        projectId,
+        conversationId: '',
+        callerId: '',
+        receiverId: '',
+        status: CallState.ENDED,
+        callType: 'VIDEO',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        endedAt: new Date(),
+      };
     }
 
     if (call.callerId !== userId && call.receiverId !== userId) {
