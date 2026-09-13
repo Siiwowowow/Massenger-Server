@@ -70,15 +70,63 @@ export const envSchema = z.object({
     ),
 
   // LiveKit (Audio/Video Calling)
-  LIVEKIT_URL: z.string().default('ws://localhost:7880'),
-  LIVEKIT_API_KEY: z.string().default('devkey'),
-  LIVEKIT_API_SECRET: z.string().default('secret'),
+  LIVEKIT_URL: z.string({
+    required_error: 'LIVEKIT_URL is required',
+  }),
+  LIVEKIT_API_KEY: z.string({
+    required_error: 'LIVEKIT_API_KEY is required',
+  }),
+  LIVEKIT_API_SECRET: z.string({
+    required_error: 'LIVEKIT_API_SECRET is required',
+  }),
+}).superRefine((data, ctx) => {
+  if (data.NODE_ENV === 'production') {
+    if (!data.LIVEKIT_URL || data.LIVEKIT_URL.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['LIVEKIT_URL'],
+        message: 'LIVEKIT_URL is required in production and must not be empty',
+      });
+    } else if (data.LIVEKIT_URL.includes('localhost') || data.LIVEKIT_URL.includes('127.0.0.1')) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['LIVEKIT_URL'],
+        message: 'LIVEKIT_URL cannot point to localhost in production',
+      });
+    }
+
+    if (!data.LIVEKIT_API_KEY || data.LIVEKIT_API_KEY.trim() === '' || data.LIVEKIT_API_KEY === 'devkey') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['LIVEKIT_API_KEY'],
+        message: 'LIVEKIT_API_KEY is required in production and cannot be default devkey',
+      });
+    }
+
+    if (!data.LIVEKIT_API_SECRET || data.LIVEKIT_API_SECRET.trim() === '' || data.LIVEKIT_API_SECRET === 'secret') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['LIVEKIT_API_SECRET'],
+        message: 'LIVEKIT_API_SECRET is required in production and cannot be default secret',
+      });
+    }
+  }
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
 
 export function validateEnv(config: Record<string, unknown>): EnvConfig {
-  const parsed = envSchema.safeParse(config);
+  const nodeEnv = (config.NODE_ENV || process.env.NODE_ENV || 'development') as string;
+  const isDev = nodeEnv === 'development' || nodeEnv === 'test';
+
+  const configToValidate = {
+    ...config,
+    LIVEKIT_URL: config.LIVEKIT_URL || (isDev ? 'ws://localhost:7880' : undefined),
+    LIVEKIT_API_KEY: config.LIVEKIT_API_KEY || (isDev ? 'devkey' : undefined),
+    LIVEKIT_API_SECRET: config.LIVEKIT_API_SECRET || (isDev ? 'secret' : undefined),
+  };
+
+  const parsed = envSchema.safeParse(configToValidate);
   if (!parsed.success) {
     console.error('❌ Invalid environment variables:', JSON.stringify(parsed.error.format(), null, 2));
     throw new Error('Config validation error');

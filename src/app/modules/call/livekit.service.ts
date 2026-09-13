@@ -10,28 +10,59 @@ export class LiveKitService implements OnModuleInit {
   private apiSecret: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.url = this.configService.get<string>('livekit.url') || process.env.LIVEKIT_URL || 'ws://localhost:7880';
-    this.apiKey = this.configService.get<string>('livekit.apiKey') || process.env.LIVEKIT_API_KEY || 'devkey';
-    this.apiSecret = this.configService.get<string>('livekit.apiSecret') || process.env.LIVEKIT_API_SECRET || 'secret';
+    const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
+
+    const rawUrl =
+      this.configService.get<string>('livekit.url') ||
+      this.configService.get<string>('LIVEKIT_URL') ||
+      process.env.LIVEKIT_URL;
+
+    const rawApiKey =
+      this.configService.get<string>('livekit.apiKey') ||
+      this.configService.get<string>('LIVEKIT_API_KEY') ||
+      process.env.LIVEKIT_API_KEY;
+
+    const rawApiSecret =
+      this.configService.get<string>('livekit.apiSecret') ||
+      this.configService.get<string>('LIVEKIT_API_SECRET') ||
+      process.env.LIVEKIT_API_SECRET;
+
+    this.url = (rawUrl || (isDev ? 'ws://localhost:7880' : '')).trim();
+    this.apiKey = (rawApiKey || (isDev ? 'devkey' : '')).trim();
+    this.apiSecret = (rawApiSecret || (isDev ? 'secret' : '')).trim();
   }
 
   onModuleInit() {
     this.validateConfig();
     this.logger.log(`LiveKit service initialized with server URL: ${this.url}`);
+    this.logger.log(`LiveKit configured URL: ${this.url}`);
   }
 
   /**
    * Validate that all required LiveKit configuration variables are present and valid.
    */
   public validateConfig(): void {
-    if (!this.url || typeof this.url !== 'string') {
+    const isProd = process.env.NODE_ENV === 'production';
+
+    if (!this.url || typeof this.url !== 'string' || this.url.trim() === '') {
       throw new Error('LIVEKIT_URL configuration is missing or invalid');
     }
-    if (!this.apiKey || typeof this.apiKey !== 'string') {
+    if (isProd && (this.url.includes('localhost') || this.url.includes('127.0.0.1'))) {
+      throw new Error('LIVEKIT_URL cannot point to localhost in production');
+    }
+
+    if (!this.apiKey || typeof this.apiKey !== 'string' || this.apiKey.trim() === '') {
       throw new Error('LIVEKIT_API_KEY configuration is missing or invalid');
     }
-    if (!this.apiSecret || typeof this.apiSecret !== 'string') {
+    if (isProd && this.apiKey === 'devkey') {
+      throw new Error('LIVEKIT_API_KEY cannot use default "devkey" in production');
+    }
+
+    if (!this.apiSecret || typeof this.apiSecret !== 'string' || this.apiSecret.trim() === '') {
       throw new Error('LIVEKIT_API_SECRET configuration is missing or invalid');
+    }
+    if (isProd && this.apiSecret === 'secret') {
+      throw new Error('LIVEKIT_API_SECRET cannot use default "secret" in production');
     }
   }
 

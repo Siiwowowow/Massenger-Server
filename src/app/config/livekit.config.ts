@@ -1,7 +1,15 @@
 import { registerAs } from '@nestjs/config';
 
-export const livekitConfig = registerAs('livekit', () => ({
-  url: process.env.LIVEKIT_URL || 'ws://localhost:7880',
-  apiKey: process.env.LIVEKIT_API_KEY || 'devkey',
-  apiSecret: process.env.LIVEKIT_API_SECRET || 'secret',
-}));
+export const livekitConfig = registerAs('livekit', () => {
+  const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
+
+  const rawUrl = process.env.LIVEKIT_URL || (isDev ? 'ws://localhost:7880' : '');
+  const rawKey = process.env.LIVEKIT_API_KEY || (isDev ? 'devkey' : '');
+  const rawSecret = process.env.LIVEKIT_API_SECRET || (isDev ? 'secret' : '');
+
+  return {
+    url: rawUrl.trim(),
+    apiKey: rawKey.trim(),
+    apiSecret: rawSecret.trim(),
+  };
+});
