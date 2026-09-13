@@ -20,7 +20,7 @@ import {
   ResetPasswordDto,
   VerifyEmailDto,
 } from './dto/auth.dto';
-import { hashPassword } from 'better-auth/crypto';
+
 
 @Injectable()
 export class AuthService {
@@ -119,6 +119,9 @@ export class AuthService {
       if (user.status === UserStatus.SUSPENDED) {
         throw new UnauthorizedException('Account has been suspended. Please contact support.');
       }
+      if (!user.emailVerified) {
+        throw new UnauthorizedException('Email not verified');
+      }
 
       const tokens = JwtUtil.generateTokens({
         id: user.id,
@@ -212,6 +215,10 @@ export class AuthService {
 
     if (user.status === UserStatus.INACTIVE) {
       throw new UnauthorizedException('Account is inactive.');
+    }
+
+    if (!user.emailVerified) {
+      throw new UnauthorizedException('Please verify your email address.');
     }
 
     const tokens = JwtUtil.generateTokens({
@@ -359,6 +366,7 @@ export class AuthService {
     }
 
     // Hash new password using Better-Auth compatible hasher
+    const { hashPassword } = await eval('import("better-auth/crypto")');
     const hashedPassword = await hashPassword(dto.newPassword);
 
     // Update password in account table

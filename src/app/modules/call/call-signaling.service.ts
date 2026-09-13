@@ -19,6 +19,7 @@ import {
   BadRequestException,
 } from '../../common/exceptions/domain.exceptions';
 import { CommunicationUser, ConversationType } from '../../../generated/prisma';
+import { PresenceService } from '../realtime/presence/presence.service';
 
 export type CallStartResult =
   | {
@@ -31,9 +32,10 @@ export type CallStartResult =
       isBusy: false;
       call: CallSession;
       receiver: any;
+      receiverOnline: boolean;
     };
 
-export type CallTimeoutCallback = (call: CallSession) => void;
+export type CallTimeoutCallback = (call: CallSession) => void | Promise<void>;
 
 @Injectable()
 export class CallSignalingService implements OnModuleDestroy {
@@ -45,6 +47,7 @@ export class CallSignalingService implements OnModuleDestroy {
   constructor(
     @Inject(CALL_STORE) private readonly callStore: CallStore,
     private readonly conversationService: ConversationService,
+    private readonly presenceService: PresenceService,
   ) {}
 
   onModuleDestroy() {
@@ -119,7 +122,7 @@ export class CallSignalingService implements OnModuleDestroy {
 
     for (const listener of this.timeoutListeners) {
       try {
-        listener(endedCall);
+        await listener(endedCall);
       } catch (err: unknown) {
         this.logger.error(`Error in call timeout listener: ${(err as any)?.message}`);
       }
@@ -165,6 +168,9 @@ export class CallSignalingService implements OnModuleDestroy {
     }
 
     const receiverId = receiverParticipant.userId;
+    const receiverOnline = (
+      await this.presenceService.getPresence(projectId, receiverId)
+    ).isOnline;
 
     // 5. Generate unique, opaque call ID (distinct from conversationId)
     const callId = `call_${Date.now()}_${randomUUID().replace(/-/g, '').slice(0, 10)}`;
@@ -212,6 +218,7 @@ export class CallSignalingService implements OnModuleDestroy {
       isBusy: false,
       call: session,
       receiver: receiverParticipant.user,
+      receiverOnline,
     };
   }
 

@@ -26,6 +26,8 @@ export class CommunicationUserService {
         name: dto.name.trim(),
         email: dto.email ? dto.email.toLowerCase().trim() : null,
         avatar: dto.avatar || null,
+        isOnline: true,
+        lastSeenAt: null,
       },
       update: {
         name: dto.name.trim(),
@@ -33,6 +35,8 @@ export class CommunicationUserService {
           ? { email: dto.email ? dto.email.toLowerCase().trim() : null }
           : {}),
         ...(dto.avatar !== undefined ? { avatar: dto.avatar || null } : {}),
+        isOnline: true,
+        lastSeenAt: null,
       },
     });
 
@@ -92,8 +96,8 @@ export class CommunicationUserService {
         where: cleanSearch
           ? {
               OR: [
-                { name: { contains: cleanSearch, mode: 'insensitive' } },
-                { email: { contains: cleanSearch, mode: 'insensitive' } },
+                { name: { contains: cleanSearch } },
+                { email: { contains: cleanSearch } },
               ],
             }
           : {},
@@ -154,8 +158,8 @@ export class CommunicationUserService {
     if (cleanSearch) {
       excludeFilters.push({
         OR: [
-          { name: { contains: cleanSearch, mode: 'insensitive' } },
-          { email: { contains: cleanSearch, mode: 'insensitive' } },
+          { name: { contains: cleanSearch } },
+          { email: { contains: cleanSearch } },
         ],
       });
     }

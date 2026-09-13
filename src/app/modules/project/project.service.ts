@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { PrismaService } from '../../database/prisma.service';
 import {
@@ -10,10 +10,37 @@ import { PaginationQueryDto } from '../../common/dto/pagination.dto';
 import { ProjectStatus } from '../../../generated/prisma';
 
 @Injectable()
-export class ProjectService {
+export class ProjectService implements OnModuleInit {
   private readonly logger = new Logger(ProjectService.name);
 
   constructor(private readonly prisma: PrismaService) {}
+
+  async onModuleInit() {
+    const projectId = process.env.DEFAULT_PROJECT_ID || '6a9a46e2c13d4f5a5538dcd5';
+    const projectName = process.env.DEFAULT_PROJECT_NAME || 'Pulse Messenger';
+    const projectSlug = process.env.DEFAULT_PROJECT_SLUG || 'pulse-messenger';
+
+    const existing = await this.prisma.project.findUnique({ where: { id: projectId } });
+    if (existing) return;
+
+    const slugOwner = await this.prisma.project.findUnique({ where: { slug: projectSlug } });
+    const slug = slugOwner && slugOwner.id !== projectId
+      ? `${projectSlug}-${projectId.slice(0, 8)}`
+      : projectSlug;
+
+    await this.prisma.project.create({
+      data: {
+        id: projectId,
+        name: projectName,
+        slug,
+        apiKey: `proj_live_${crypto.randomBytes(16).toString('hex')}`,
+        apiSecret: `sk_live_${crypto.randomBytes(32).toString('hex')}`,
+        status: ProjectStatus.ACTIVE,
+      },
+    });
+
+    this.logger.log(`Default project initialized: ${projectName} (${projectId})`);
+  }
 
   async create(dto: CreateProjectDto) {
     const existing = await this.prisma.project.findUnique({

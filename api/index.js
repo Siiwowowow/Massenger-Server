@@ -6,6 +6,15 @@ const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
+// Help Vercel's bundler (nft) to trace the ESM packages we dynamically import
+// These are never executed, so they avoid the ERR_REQUIRE_ESM crash, but force inclusion.
+if (false) {
+  require('better-auth');
+  require('better-auth/node');
+  require('better-auth/adapters/prisma');
+  require('better-auth/crypto');
+}
+
 let cachedServerPromise = null;
 
 function isOriginAllowed(origin, configuredOrigins) {

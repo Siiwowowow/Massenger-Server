@@ -56,7 +56,7 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '../../common/exceptions/domain.exceptions';
-import { Project, ProjectStatus, CommunicationUser } from '../../../generated/prisma';
+import { MessageType, Project, ProjectStatus, CommunicationUser } from '../../../generated/prisma';
 import {
   sendMessageSchema,
   updateMessageSchema,
@@ -115,7 +115,31 @@ export class RealtimeGateway
     });
 
     // Phase 2: Call ringing timeout notification
-    this.callSignalingService.onCallTimeout((call) => {
+    this.callSignalingService.onCallTimeout(async (call) => {
+      const caller = await this.prisma.communicationUser.findUnique({
+        where: { id: call.callerId },
+        select: { name: true },
+      });
+      const callLabel = call.callType === 'VIDEO' ? 'video' : 'audio';
+      const missedCallMessage = await this.messageService.sendMessage(
+        call.projectId,
+        call.conversationId,
+        call.callerId,
+        {
+          type: MessageType.SYSTEM,
+          content: `Missed ${callLabel} call from ${caller?.name || 'a user'}`,
+          metadata: {
+            event: 'MISSED_CALL',
+            callId: call.id,
+            callType: call.callType,
+          },
+        },
+      );
+
+      this.server
+        .to(REALTIME_ROOMS.conversation(call.conversationId))
+        .emit(REALTIME_EVENTS.SERVER.MESSAGE_NEW, missedCallMessage);
+
       const payload: CallEndedPayload = {
         callId: call.id,
         conversationId: call.conversationId,
@@ -1012,6 +1036,7 @@ export class RealtimeGateway
             conversationId: result.conversationId,
             status: CallState.BUSY,
             busyUserId: result.receiverId,
+            receiverOnline: false,
           },
         };
       }
@@ -1039,6 +1064,7 @@ export class RealtimeGateway
           callId: result.call.id,
           conversationId: result.call.conversationId,
           status: result.call.status,
+          receiverOnline: result.receiverOnline,
         },
       };
     } catch (err: unknown) {

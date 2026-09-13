@@ -60,6 +60,10 @@ export class AuthGuard implements CanActivate {
           throw new ForbiddenException('Your account is inactive.');
         }
 
+        if (!user.emailVerified) {
+          throw new ForbiddenException('Please verify your email address to access this resource.');
+        }
+
         req.user = user;
         req.session = session;
 
@@ -122,6 +126,10 @@ export class AuthGuard implements CanActivate {
 
             if (user.status === UserStatus.INACTIVE) {
               throw new ForbiddenException('Your account is inactive.');
+            }
+
+            if (!user.emailVerified) {
+              throw new ForbiddenException('Please verify your email address to access this resource.');
             }
 
             req.user = user as any;

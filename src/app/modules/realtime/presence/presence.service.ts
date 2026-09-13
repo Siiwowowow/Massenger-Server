@@ -14,6 +14,7 @@ import { REALTIME_ROOMS } from '../realtime.constants';
 @Injectable()
 export class PresenceService {
   private readonly logger = new Logger(PresenceService.name);
+  private readonly heartbeatWindowMs = 45_000;
 
   constructor(
     @Inject(PRESENCE_STORE)
@@ -139,6 +140,7 @@ export class PresenceService {
         id: true,
         isOnline: true,
         lastSeenAt: true,
+        updatedAt: true,
       },
     });
 
@@ -146,7 +148,9 @@ export class PresenceService {
       throw new NotFoundException('CommunicationUser', userId);
     }
 
-    const isOnline = this.presenceStore.isOnline(projectId, user.id);
+    const isOnline =
+      this.presenceStore.isOnline(projectId, user.id) ||
+      (user.isOnline && Date.now() - user.updatedAt.getTime() <= this.heartbeatWindowMs);
 
     return {
       userId: user.id,
@@ -177,6 +181,7 @@ export class PresenceService {
                 id: true,
                 isOnline: true,
                 lastSeenAt: true,
+                updatedAt: true,
               },
             },
           },
@@ -198,7 +203,10 @@ export class PresenceService {
     }
 
     return conversation.participants.map((p) => {
-      const isOnline = this.presenceStore.isOnline(projectId, p.userId);
+      const isOnline =
+        this.presenceStore.isOnline(projectId, p.userId) ||
+        (p.user.isOnline &&
+          Date.now() - p.user.updatedAt.getTime() <= this.heartbeatWindowMs);
       return {
         userId: p.userId,
         isOnline,

@@ -12,9 +12,8 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
-import { toNodeHandler } from 'better-auth/node';
 import { AuthService } from './auth.service';
-import { auth } from './better-auth.instance';
+import { getAuth } from './better-auth.instance';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import { Public } from '../common/decorators/public.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -35,7 +34,7 @@ import {
 
 @Controller('auth')
 export class AuthController {
-  private readonly betterAuthHandler = toNodeHandler(auth);
+  private betterAuthHandler: any;
 
   constructor(private readonly authService: AuthService) {}
 
@@ -168,6 +167,11 @@ export class AuthController {
   @SkipTransform()
   @All('*path')
   async handleBetterAuth(@Req() req: Request, @Res() res: Response) {
+    if (!this.betterAuthHandler) {
+      const { toNodeHandler } = await eval('import("better-auth/node")');
+      const authInstance = await getAuth();
+      this.betterAuthHandler = toNodeHandler(authInstance);
+    }
     return this.betterAuthHandler(req, res);
   }
 }
