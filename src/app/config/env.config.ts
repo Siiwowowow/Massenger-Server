@@ -79,6 +79,14 @@ export const envSchema = z.object({
   LIVEKIT_API_SECRET: z.string({
     required_error: 'LIVEKIT_API_SECRET is required',
   }),
+
+  // Render Keep-Alive / Anti-Sleep Configuration
+  RENDER_EXTERNAL_URL: z.string().optional(),
+  KEEP_ALIVE_URL: z.string().optional(),
+  ENABLE_KEEP_ALIVE: z
+    .preprocess((val) => val === 'true' || val === true || val === undefined, z.boolean())
+    .default(true),
+  KEEP_ALIVE_INTERVAL_MINUTES: z.coerce.number().default(10),
 }).superRefine((data, ctx) => {
   if (data.NODE_ENV === 'production') {
     if (!data.LIVEKIT_URL || data.LIVEKIT_URL.trim() === '') {

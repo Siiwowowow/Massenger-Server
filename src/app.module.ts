@@ -20,6 +20,7 @@ import { PrismaModule } from './app/database';
 import { LoggingModule } from './app/infrastructure/logging';
 import { CloudinaryModule } from './app/infrastructure/cloudinary';
 import { EmailModule } from './app/infrastructure/email';
+import { KeepAliveModule } from './app/infrastructure/keep-alive';
 
 // Shared
 import { OtpModule } from './app/shared/otp/otp.module';
@@ -69,6 +70,7 @@ import { RequestIdMiddleware } from './app/common/middleware/request-id.middlewa
     LoggingModule,
     CloudinaryModule,
     EmailModule,
+    KeepAliveModule,
     OtpModule,
     PaginationModule,
     AppGraphQLModule,

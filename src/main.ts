@@ -97,7 +97,7 @@ async function bootstrap() {
 
   // Global REST API prefix with clean exclusions
   app.setGlobalPrefix(apiPrefix, {
-    exclude: ['', '/', 'health', 'graphql'],
+    exclude: ['', '/', 'health', 'ping', 'graphql'],
   });
 
   // Enable graceful shutdown

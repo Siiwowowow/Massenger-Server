@@ -218,4 +218,16 @@ export class AppController {
       memoryUsage: process.memoryUsage(),
     });
   }
+
+  @Public()
+  @SkipTransform()
+  @Get('ping')
+  getPing(@Res() res: Response) {
+    return res.status(200).json({
+      status: 'ok',
+      message: 'pong',
+      uptime: `${Math.floor(process.uptime())}s`,
+      timestamp: new Date().toISOString(),
+    });
+  }
 }
