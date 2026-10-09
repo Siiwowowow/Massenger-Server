@@ -263,6 +263,20 @@ exports.Prisma.MessageRequestScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.VerificationEmailDeliveryScalarFieldEnum = {
+  id: 'id',
+  otpId: 'otpId',
+  identifier: 'identifier',
+  userName: 'userName',
+  status: 'status',
+  attempts: 'attempts',
+  nextAttemptAt: 'nextAttemptAt',
+  lockedUntil: 'lockedUntil',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.ProjectScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -348,6 +362,7 @@ exports.Prisma.ModelName = {
   Message: 'Message',
   MessageReceipt: 'MessageReceipt',
   MessageRequest: 'MessageRequest',
+  VerificationEmailDelivery: 'VerificationEmailDelivery',
   Project: 'Project'
 };
 

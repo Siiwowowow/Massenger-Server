@@ -1,0 +1,18 @@
+// Durable verification delivery; account creation never waits for SMTP.
+model VerificationEmailDelivery {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  otpId         String   @unique @db.ObjectId
+  identifier    String
+  userName      String?
+  status        String   @default("PENDING")
+  attempts      Int      @default(0)
+  nextAttemptAt DateTime @default(now())
+  lockedUntil   DateTime @default(now())
+  sentAt        DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status, nextAttemptAt])
+  @@index([identifier, createdAt])
+  @@map("verification_email_deliveries")
+}

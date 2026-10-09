@@ -140,7 +140,7 @@ export class MessageReceiptService {
     if (existing) {
       // If already READ, do not regress to DELIVERED
       if (existing.readAt) {
-        return this.formatReceipt(existing);
+        return this.formatReceipt(existing, message.conversationId);
       }
 
       // If already DELIVERED, return existing (idempotent, preserve original timestamp)
@@ -156,8 +156,10 @@ export class MessageReceiptService {
       return this.formatReceipt(updated, message.conversationId);
     }
 
-    const created = await this.prisma.messageReceipt.create({
-      data: {
+    const created = await this.prisma.messageReceipt.upsert({
+      where: { messageId_userId: { messageId, userId } },
+      update: {},
+      create: {
         messageId,
         userId,
         projectId,
@@ -197,48 +199,19 @@ export class MessageReceiptService {
 
     const now = new Date();
 
-    const existing = await this.prisma.messageReceipt.findUnique({
-      where: {
-        messageId_userId: {
-          messageId,
-          userId,
-        },
-      },
+    let receipt = await this.prisma.messageReceipt.upsert({
+      where: { messageId_userId: { messageId, userId } },
+      create: { messageId, userId, projectId, deliveredAt: now, readAt: now },
+      update: {},
     });
-
-    let receipt: any;
-
-    if (existing) {
-      if (existing.readAt) {
-        // Already READ: preserve timestamp (idempotent)
-        receipt = existing;
-      } else {
-        // Transition from DELIVERED (or unacknowledged) to READ.
-        // If deliveredAt was already recorded earlier, preserve that earlier deliveredAt.
-        // Otherwise READ satisfies DELIVERED at `now`.
-        const deliveredAt = existing.deliveredAt || now;
-        receipt = await this.prisma.messageReceipt.update({
-          where: { id: existing.id },
-          data: {
-            deliveredAt,
-            readAt: now,
-          },
-        });
-      }
-    } else {
-      // First receipt creation directly as READ (READ implies DELIVERED)
-      receipt = await this.prisma.messageReceipt.create({
-        data: {
-          messageId,
-          userId,
-          projectId,
-          deliveredAt: now,
-          readAt: now,
-        },
+    if (!receipt.readAt) {
+      await this.prisma.messageReceipt.updateMany({
+        where: { id: receipt.id, readAt: null },
+        data: { deliveredAt: receipt.deliveredAt || now, readAt: now },
       });
+      receipt = (await this.prisma.messageReceipt.findUnique({ where: { id: receipt.id } }))!;
     }
 
-    // Update conversation participant read pointer
     await this.updateParticipantReadPointer(
       message.conversationId,
       userId,
@@ -333,46 +306,18 @@ export class MessageReceiptService {
     }
 
     const now = new Date();
-    const unreadIds = unreadMessages.map((m) => m.id);
 
-    // Fetch existing receipts to preserve earlier deliveredAt timestamps if already delivered
-    const existingReceipts = await this.prisma.messageReceipt.findMany({
-      where: {
-        messageId: { in: unreadIds },
-        userId,
-      },
-    });
-    const deliveredMap = new Map<string, Date | null>(
-      existingReceipts.map((r) => [r.messageId, r.deliveredAt]),
-    );
-
-    // Bulk upsert read receipts for all eligible messages
-    await Promise.all(
-      unreadMessages.map((msg) => {
-        const prevDelivered = deliveredMap.get(msg.id);
-        const deliveredAt = prevDelivered || now;
-
-        return this.prisma.messageReceipt.upsert({
-          where: {
-            messageId_userId: {
-              messageId: msg.id,
-              userId,
-            },
-          },
-          create: {
-            messageId: msg.id,
-            userId,
-            projectId,
-            deliveredAt: now,
-            readAt: now,
-          },
-          update: {
-            deliveredAt,
-            readAt: now,
-          },
-        });
-      }),
-    );
+    await Promise.all(unreadMessages.map(async (message) => {
+      const receipt = await this.prisma.messageReceipt.upsert({
+        where: { messageId_userId: { messageId: message.id, userId } },
+        create: { messageId: message.id, userId, projectId, deliveredAt: now, readAt: now },
+        update: {},
+      });
+      if (!receipt.readAt) await this.prisma.messageReceipt.updateMany({
+        where: { id: receipt.id, readAt: null },
+        data: { deliveredAt: receipt.deliveredAt || now, readAt: now },
+      });
+    }));
 
     const latestReadMessageId = targetMessage
       ? targetMessage.id

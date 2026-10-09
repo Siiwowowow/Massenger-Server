@@ -8,6 +8,7 @@ import { MessageModule } from '../message/message.module';
 import { PresenceModule } from './presence/presence.module';
 import { TypingModule } from './typing/typing.module';
 import { CallModule } from '../call/call.module';
+import { RealtimePublisherModule } from './realtime-publisher.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CallModule } from '../call/call.module';
     PresenceModule,
     TypingModule,
     CallModule,
+    RealtimePublisherModule,
   ],
   providers: [RealtimeGateway, WsAuthGuard],
   exports: [RealtimeGateway, WsAuthGuard, PresenceModule, TypingModule],

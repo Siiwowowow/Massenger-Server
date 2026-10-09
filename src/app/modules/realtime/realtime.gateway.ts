@@ -66,8 +66,11 @@ import { isValidObjectId } from '../../common/utils/jwt/jwt.util';
 import { ZodError } from 'zod';
 import { PresenceService } from './presence/presence.service';
 import { TypingService } from './typing/typing.service';
+import { RealtimePublisher } from './realtime-publisher.module';
 
 @WebSocketGateway({
+  pingInterval: 10000,
+  pingTimeout: 5000,
   cors: {
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean | string) => void) => {
       // Dynamic origin reflection allows browsers to accept credentials with Socket.IO
@@ -92,12 +95,14 @@ export class RealtimeGateway
     private readonly presenceService: PresenceService,
     private readonly typingService: TypingService,
     private readonly callSignalingService: CallSignalingService,
+    private readonly publisher: RealtimePublisher,
   ) {}
 
   /**
    * Register Socket.IO middleware for handshake authentication
    */
   afterInit(server: Server) {
+    this.publisher.bind(server);
     server.use(async (socket, next) => {
       try {
         const { project, communicationUser } =
@@ -531,21 +536,7 @@ export class RealtimeGateway
         validatedDto,
       );
 
-      // Broadcast to conversation room
-      this.server
-        .to(REALTIME_ROOMS.conversation(payload.conversationId))
-        .emit(REALTIME_EVENTS.SERVER.MESSAGE_NEW, message);
-
-      // Also broadcast to each participant's personal room so their sidebar list updates instantly
-      const participants = await this.prisma.conversationParticipant.findMany({
-        where: { conversationId: payload.conversationId },
-        select: { userId: true },
-      });
-      for (const p of participants) {
-        this.server
-          .to(REALTIME_ROOMS.user(p.userId))
-          .emit(REALTIME_EVENTS.SERVER.MESSAGE_NEW, message);
-      }
+      // MessageService publishes for REST and sockets, once per recipient.
 
       return {
         success: true,
@@ -682,12 +673,7 @@ export class RealtimeGateway
       };
 
       if (receipt.conversationId) {
-        this.server
-          .to(REALTIME_ROOMS.conversation(receipt.conversationId))
-          .emit(
-            REALTIME_EVENTS.SERVER.MESSAGE_DELIVERY_UPDATED,
-            deliveryPayload,
-          );
+        await this.publisher.publish(receipt.conversationId, REALTIME_EVENTS.SERVER.MESSAGE_DELIVERY_UPDATED, deliveryPayload);
       }
 
       return {
@@ -730,9 +716,7 @@ export class RealtimeGateway
       };
 
       if (receipt.conversationId) {
-        this.server
-          .to(REALTIME_ROOMS.conversation(receipt.conversationId))
-          .emit(REALTIME_EVENTS.SERVER.MESSAGE_READ_UPDATED, readPayload);
+        await this.publisher.publish(receipt.conversationId, REALTIME_EVENTS.SERVER.MESSAGE_READ_UPDATED, readPayload);
       }
 
       return {
@@ -779,12 +763,8 @@ export class RealtimeGateway
         readAt: new Date(),
       };
 
-      this.server
-        .to(REALTIME_ROOMS.conversation(payload.conversationId))
-        .emit(
-          REALTIME_EVENTS.SERVER.CONVERSATION_READ_UPDATED,
-          readUpdatePayload,
-        );
+      if (result.markedCount > 0) await this.publisher.publish(payload.conversationId,
+        REALTIME_EVENTS.SERVER.CONVERSATION_READ_UPDATED, readUpdatePayload);
 
       return {
         success: true,
@@ -830,7 +810,7 @@ export class RealtimeGateway
         },
       );
 
-      if (shouldBroadcast) {
+      if (shouldBroadcast || this.typingService.isTyping(project.id, payload.conversationId, user.id)) {
         socket.broadcast
           .to(REALTIME_ROOMS.conversation(payload.conversationId))
           .emit(REALTIME_EVENTS.SERVER.TYPING_STARTED, {

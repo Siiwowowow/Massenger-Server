@@ -1,9 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { EmailService } from '../infrastructure/email/email.service';
 import { OtpService } from '../shared/otp/otp.service';
 import { CloudinaryService } from '../infrastructure/cloudinary/cloudinary.service';
-import { auth } from './better-auth.instance';
+import { auth, getAuth } from './better-auth.instance';
+import { VerificationEmailService } from '../infrastructure/email/verification-email.service';
 import { JwtUtil, isValidObjectId } from '../common/utils/jwt/jwt.util';
 import {
   ConflictException,
@@ -23,7 +24,7 @@ import {
 
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit {
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
@@ -31,7 +32,10 @@ export class AuthService {
     private readonly emailService: EmailService,
     private readonly otpService: OtpService,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly verificationEmail: VerificationEmailService,
   ) {}
+
+  async onModuleInit() { await getAuth(this.prisma); }
 
   async register(dto: RegisterDto, headers?: Headers, file?: Express.Multer.File) {
     const existing = await this.prisma.user.findUnique({
@@ -64,20 +68,15 @@ export class AuthService {
         headers: headers || new Headers(),
       });
 
-      if (imageUrl && response?.user?.id) {
-        await this.prisma.user.update({
-          where: { id: response.user.id },
-          data: { image: imageUrl },
-        });
+      const otp = await this.otpService.getOrCreateVerificationOtp(dto.email.toLowerCase());
+      let delivery: { verificationEmailQueued: boolean; retryAfter: number } | undefined;
+      try {
+        delivery = await this.verificationEmail.enqueue(dto.email.toLowerCase(), otp.id, dto.name);
+      } catch {
+        // The account and code are saved. Never report registration failure just
+        // because delivery is unavailable; the verification screen can resend.
+        this.logger.error('Unable to queue verification email; resend required');
       }
-
-      // Send 6-digit OTP verification code to user's email
-      const otp = await this.otpService.createOtp(
-        dto.email.toLowerCase(),
-        TokenType.EMAIL_VERIFICATION,
-        15, // 15 minutes
-      );
-      const verificationEmailSent = await this.emailService.sendOtpEmail(dto.email.toLowerCase(), otp, dto.name);
 
       const user = response.user as any;
       const tokens = JwtUtil.generateTokens({
@@ -89,7 +88,9 @@ export class AuthService {
       });
 
       return {
-        verificationEmailSent,
+        verificationEmailSent: delivery ? undefined : false,
+        verificationEmailQueued: delivery?.verificationEmailQueued || false,
+        retryAfter: delivery?.retryAfter || 0,
         user: response.user,
         session: (response as any).session || null,
         token: (response as any).token || (response as any).session?.token,
@@ -454,7 +455,8 @@ export class AuthService {
     }
 
     const user = await this.prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
+      where: { email: email.trim().toLowerCase() },
+      select: { email: true, emailVerified: true, name: true },
     });
 
     if (!user) {
@@ -465,14 +467,12 @@ export class AuthService {
       throw new BadRequestException('Email is already verified');
     }
 
-    const otp = await this.otpService.createOtp(
-      user.email,
-      TokenType.EMAIL_VERIFICATION,
-      15, // 15 mins
-    );
-
-    const sent = await this.emailService.sendOtpEmail(user.email, otp, user.name);
-    if (!sent) throw new BadRequestException('Unable to send verification email. Please try resending the code.');
+    const otp = await this.otpService.getOrCreateVerificationOtp(user.email);
+    await this.verificationEmail.enqueue(user.email, otp.id, user.name);
     return true;
+  }
+
+  verificationEmailStatus(email: string) {
+    return this.verificationEmail.getStatus(email.trim().toLowerCase());
   }
 }

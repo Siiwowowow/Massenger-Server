@@ -3,8 +3,7 @@
 import { PrismaClient } from '../../generated/prisma';
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
-const prisma = globalForPrisma.prisma || new PrismaClient();
-globalForPrisma.prisma = prisma;
+let prisma: PrismaClient | undefined = globalForPrisma.prisma;
 
 const defaultTrustedOrigins = [
   'http://localhost:3000',
@@ -37,6 +36,7 @@ const hasGoogleAuth =
   Boolean(process.env.GOOGLE_CLIENT_ID) && Boolean(process.env.GOOGLE_CLIENT_SECRET);
 
 let _authInstance: any = null;
+let initialization: Promise<any> | null = null;
 
 // Dummy requires to force Vercel's NFT (Node File Trace) to bundle better-auth
 // Since better-auth is ESM, we load it dynamically via eval to avoid TS compiling to require(),
@@ -50,8 +50,12 @@ if (process.env.VERCEL_NFT_DUMMY) {
   require('better-auth/crypto');
 }
 
-export const getAuth = async () => {
-  if (!_authInstance) {
+export const getAuth = async (sharedPrisma?: PrismaClient) => {
+  if (_authInstance) return _authInstance;
+  if (initialization) return initialization;
+  prisma = sharedPrisma || prisma || new PrismaClient();
+  globalForPrisma.prisma = prisma;
+  initialization = (async () => {
     const { betterAuth } = await eval('import("better-auth")');
     const { prismaAdapter } = await eval('import("better-auth/adapters/prisma")');
     
@@ -67,7 +71,7 @@ export const getAuth = async () => {
       },
       emailAndPassword: {
         enabled: true,
-        autoSignIn: true,
+        autoSignIn: false,
         minPasswordLength: 6,
       },
       ...(hasGoogleAuth && {
@@ -111,8 +115,10 @@ export const getAuth = async () => {
       baseURL,
       trustedOrigins,
     });
-  }
-  return _authInstance;
+    return _authInstance;
+  })();
+  try { return await initialization; }
+  catch (error) { initialization = null; throw error; }
 };
 
 // Create a proxy that defers calls to the actual auth instance

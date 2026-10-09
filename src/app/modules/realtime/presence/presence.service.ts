@@ -14,7 +14,6 @@ import { REALTIME_ROOMS } from '../realtime.constants';
 @Injectable()
 export class PresenceService {
   private readonly logger = new Logger(PresenceService.name);
-  private readonly heartbeatWindowMs = 45_000;
 
   constructor(
     @Inject(PRESENCE_STORE)
@@ -148,14 +147,12 @@ export class PresenceService {
       throw new NotFoundException('CommunicationUser', userId);
     }
 
-    const isOnline =
-      this.presenceStore.isOnline(projectId, user.id) ||
-      (user.isOnline && Date.now() - user.updatedAt.getTime() <= this.heartbeatWindowMs);
+    const isOnline = this.presenceStore.isOnline(projectId, user.id);
 
     return {
       userId: user.id,
       isOnline,
-      lastSeenAt: isOnline ? null : user.lastSeenAt || null,
+      lastSeenAt: isOnline ? null : user.lastSeenAt || user.updatedAt,
     };
   }
 
@@ -203,14 +200,11 @@ export class PresenceService {
     }
 
     return conversation.participants.map((p) => {
-      const isOnline =
-        this.presenceStore.isOnline(projectId, p.userId) ||
-        (p.user.isOnline &&
-          Date.now() - p.user.updatedAt.getTime() <= this.heartbeatWindowMs);
+      const isOnline = this.presenceStore.isOnline(projectId, p.userId);
       return {
         userId: p.userId,
         isOnline,
-        lastSeenAt: isOnline ? null : p.user.lastSeenAt || null,
+        lastSeenAt: isOnline ? null : p.user.lastSeenAt || p.user.updatedAt,
       };
     });
   }
@@ -240,10 +234,12 @@ export class PresenceService {
       },
       select: {
         id: true,
+        participants: { select: { userId: true } },
       },
     });
 
-    return conversations.map((c) => REALTIME_ROOMS.conversation(c.id));
+    return [...new Set(conversations.flatMap((conversation) => conversation.participants.map(
+      (participant) => REALTIME_ROOMS.user(participant.userId))))];
   }
 
   /**

@@ -18,12 +18,14 @@ import {
   bulkMarkReadSchema,
 } from './dto/receipt.dto';
 import { Public } from '../../common/decorators/public.decorator';
+import { RealtimePublisher } from '../realtime/realtime-publisher.module';
+import { REALTIME_EVENTS } from '../realtime/realtime.constants';
 
 @Public()
 @UseGuards(CommunicationAuthGuard)
 @Controller()
 export class MessageReceiptController {
-  constructor(private readonly receiptService: MessageReceiptService) {}
+  constructor(private readonly receiptService: MessageReceiptService, private readonly publisher: RealtimePublisher) {}
 
   /**
    * Mark a message as delivered
@@ -40,6 +42,7 @@ export class MessageReceiptController {
       messageId,
       user.id,
     );
+    if (data.conversationId) await this.publisher.publish(data.conversationId, REALTIME_EVENTS.SERVER.MESSAGE_DELIVERY_UPDATED, data);
     return {
       message: 'Message marked as delivered successfully',
       data,
@@ -61,6 +64,7 @@ export class MessageReceiptController {
       messageId,
       user.id,
     );
+    if (data.conversationId) await this.publisher.publish(data.conversationId, REALTIME_EVENTS.SERVER.MESSAGE_READ_UPDATED, data);
     return {
       message: 'Message marked as read successfully',
       data,
@@ -105,6 +109,8 @@ export class MessageReceiptController {
       user.id,
       dto,
     );
+    if (data.markedCount > 0) await this.publisher.publish(conversationId, REALTIME_EVENTS.SERVER.CONVERSATION_READ_UPDATED,
+      { ...data, userId: user.id, readAt: new Date() });
     return {
       message: 'Conversation messages marked as read successfully',
       data,

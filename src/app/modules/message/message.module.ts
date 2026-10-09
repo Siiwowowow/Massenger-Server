@@ -6,9 +6,10 @@ import { MessageReceiptController } from './message-receipt.controller';
 import { ProjectModule } from '../project/project.module';
 import { CommunicationUserModule } from '../communication-user/communication-user.module';
 import { ConversationModule } from '../conversation/conversation.module';
+import { RealtimePublisherModule } from '../realtime/realtime-publisher.module';
 
 @Module({
-  imports: [ProjectModule, CommunicationUserModule, ConversationModule],
+  imports: [ProjectModule, CommunicationUserModule, ConversationModule, RealtimePublisherModule],
   controllers: [MessageController, MessageReceiptController],
   providers: [MessageService, MessageReceiptService],
   exports: [MessageService, MessageReceiptService],

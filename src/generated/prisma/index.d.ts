@@ -79,6 +79,11 @@ export type MessageReceipt = $Result.DefaultSelection<Prisma.$MessageReceiptPayl
  */
 export type MessageRequest = $Result.DefaultSelection<Prisma.$MessageRequestPayload>
 /**
+ * Model VerificationEmailDelivery
+ * 
+ */
+export type VerificationEmailDelivery = $Result.DefaultSelection<Prisma.$VerificationEmailDeliveryPayload>
+/**
  * Model Project
  * 
  */
@@ -410,6 +415,16 @@ export class PrismaClient<
     * ```
     */
   get messageRequest(): Prisma.MessageRequestDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.verificationEmailDelivery`: Exposes CRUD operations for the **VerificationEmailDelivery** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more VerificationEmailDeliveries
+    * const verificationEmailDeliveries = await prisma.verificationEmailDelivery.findMany()
+    * ```
+    */
+  get verificationEmailDelivery(): Prisma.VerificationEmailDeliveryDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.project`: Exposes CRUD operations for the **Project** model.
@@ -874,6 +889,7 @@ export namespace Prisma {
     Message: 'Message',
     MessageReceipt: 'MessageReceipt',
     MessageRequest: 'MessageRequest',
+    VerificationEmailDelivery: 'VerificationEmailDelivery',
     Project: 'Project'
   };
 
@@ -893,7 +909,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "adminProfile" | "auditLog" | "user" | "session" | "account" | "verification" | "otpToken" | "communicationUser" | "conversation" | "conversationParticipant" | "message" | "messageReceipt" | "messageRequest" | "project"
+      modelProps: "adminProfile" | "auditLog" | "user" | "session" | "account" | "verification" | "otpToken" | "communicationUser" | "conversation" | "conversationParticipant" | "message" | "messageReceipt" | "messageRequest" | "verificationEmailDelivery" | "project"
       txIsolationLevel: never
     }
     model: {
@@ -1859,6 +1875,80 @@ export namespace Prisma {
           }
         }
       }
+      VerificationEmailDelivery: {
+        payload: Prisma.$VerificationEmailDeliveryPayload<ExtArgs>
+        fields: Prisma.VerificationEmailDeliveryFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.VerificationEmailDeliveryFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationEmailDeliveryPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.VerificationEmailDeliveryFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationEmailDeliveryPayload>
+          }
+          findFirst: {
+            args: Prisma.VerificationEmailDeliveryFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationEmailDeliveryPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.VerificationEmailDeliveryFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationEmailDeliveryPayload>
+          }
+          findMany: {
+            args: Prisma.VerificationEmailDeliveryFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationEmailDeliveryPayload>[]
+          }
+          create: {
+            args: Prisma.VerificationEmailDeliveryCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationEmailDeliveryPayload>
+          }
+          createMany: {
+            args: Prisma.VerificationEmailDeliveryCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.VerificationEmailDeliveryDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationEmailDeliveryPayload>
+          }
+          update: {
+            args: Prisma.VerificationEmailDeliveryUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationEmailDeliveryPayload>
+          }
+          deleteMany: {
+            args: Prisma.VerificationEmailDeliveryDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.VerificationEmailDeliveryUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.VerificationEmailDeliveryUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$VerificationEmailDeliveryPayload>
+          }
+          aggregate: {
+            args: Prisma.VerificationEmailDeliveryAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateVerificationEmailDelivery>
+          }
+          groupBy: {
+            args: Prisma.VerificationEmailDeliveryGroupByArgs<ExtArgs>
+            result: $Utils.Optional<VerificationEmailDeliveryGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.VerificationEmailDeliveryFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.VerificationEmailDeliveryAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.VerificationEmailDeliveryCountArgs<ExtArgs>
+            result: $Utils.Optional<VerificationEmailDeliveryCountAggregateOutputType> | number
+          }
+        }
+      }
       Project: {
         payload: Prisma.$ProjectPayload<ExtArgs>
         fields: Prisma.ProjectFieldRefs
@@ -2025,6 +2115,7 @@ export namespace Prisma {
     message?: MessageOmit
     messageReceipt?: MessageReceiptOmit
     messageRequest?: MessageRequestOmit
+    verificationEmailDelivery?: VerificationEmailDeliveryOmit
     project?: ProjectOmit
   }
 
@@ -15742,6 +15833,1038 @@ export namespace Prisma {
 
 
   /**
+   * Model VerificationEmailDelivery
+   */
+
+  export type AggregateVerificationEmailDelivery = {
+    _count: VerificationEmailDeliveryCountAggregateOutputType | null
+    _avg: VerificationEmailDeliveryAvgAggregateOutputType | null
+    _sum: VerificationEmailDeliverySumAggregateOutputType | null
+    _min: VerificationEmailDeliveryMinAggregateOutputType | null
+    _max: VerificationEmailDeliveryMaxAggregateOutputType | null
+  }
+
+  export type VerificationEmailDeliveryAvgAggregateOutputType = {
+    attempts: number | null
+  }
+
+  export type VerificationEmailDeliverySumAggregateOutputType = {
+    attempts: number | null
+  }
+
+  export type VerificationEmailDeliveryMinAggregateOutputType = {
+    id: string | null
+    otpId: string | null
+    identifier: string | null
+    userName: string | null
+    status: string | null
+    attempts: number | null
+    nextAttemptAt: Date | null
+    lockedUntil: Date | null
+    sentAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type VerificationEmailDeliveryMaxAggregateOutputType = {
+    id: string | null
+    otpId: string | null
+    identifier: string | null
+    userName: string | null
+    status: string | null
+    attempts: number | null
+    nextAttemptAt: Date | null
+    lockedUntil: Date | null
+    sentAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type VerificationEmailDeliveryCountAggregateOutputType = {
+    id: number
+    otpId: number
+    identifier: number
+    userName: number
+    status: number
+    attempts: number
+    nextAttemptAt: number
+    lockedUntil: number
+    sentAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type VerificationEmailDeliveryAvgAggregateInputType = {
+    attempts?: true
+  }
+
+  export type VerificationEmailDeliverySumAggregateInputType = {
+    attempts?: true
+  }
+
+  export type VerificationEmailDeliveryMinAggregateInputType = {
+    id?: true
+    otpId?: true
+    identifier?: true
+    userName?: true
+    status?: true
+    attempts?: true
+    nextAttemptAt?: true
+    lockedUntil?: true
+    sentAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type VerificationEmailDeliveryMaxAggregateInputType = {
+    id?: true
+    otpId?: true
+    identifier?: true
+    userName?: true
+    status?: true
+    attempts?: true
+    nextAttemptAt?: true
+    lockedUntil?: true
+    sentAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type VerificationEmailDeliveryCountAggregateInputType = {
+    id?: true
+    otpId?: true
+    identifier?: true
+    userName?: true
+    status?: true
+    attempts?: true
+    nextAttemptAt?: true
+    lockedUntil?: true
+    sentAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type VerificationEmailDeliveryAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which VerificationEmailDelivery to aggregate.
+     */
+    where?: VerificationEmailDeliveryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VerificationEmailDeliveries to fetch.
+     */
+    orderBy?: VerificationEmailDeliveryOrderByWithRelationInput | VerificationEmailDeliveryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: VerificationEmailDeliveryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VerificationEmailDeliveries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VerificationEmailDeliveries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned VerificationEmailDeliveries
+    **/
+    _count?: true | VerificationEmailDeliveryCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: VerificationEmailDeliveryAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: VerificationEmailDeliverySumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: VerificationEmailDeliveryMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: VerificationEmailDeliveryMaxAggregateInputType
+  }
+
+  export type GetVerificationEmailDeliveryAggregateType<T extends VerificationEmailDeliveryAggregateArgs> = {
+        [P in keyof T & keyof AggregateVerificationEmailDelivery]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateVerificationEmailDelivery[P]>
+      : GetScalarType<T[P], AggregateVerificationEmailDelivery[P]>
+  }
+
+
+
+
+  export type VerificationEmailDeliveryGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VerificationEmailDeliveryWhereInput
+    orderBy?: VerificationEmailDeliveryOrderByWithAggregationInput | VerificationEmailDeliveryOrderByWithAggregationInput[]
+    by: VerificationEmailDeliveryScalarFieldEnum[] | VerificationEmailDeliveryScalarFieldEnum
+    having?: VerificationEmailDeliveryScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: VerificationEmailDeliveryCountAggregateInputType | true
+    _avg?: VerificationEmailDeliveryAvgAggregateInputType
+    _sum?: VerificationEmailDeliverySumAggregateInputType
+    _min?: VerificationEmailDeliveryMinAggregateInputType
+    _max?: VerificationEmailDeliveryMaxAggregateInputType
+  }
+
+  export type VerificationEmailDeliveryGroupByOutputType = {
+    id: string
+    otpId: string
+    identifier: string
+    userName: string | null
+    status: string
+    attempts: number
+    nextAttemptAt: Date
+    lockedUntil: Date
+    sentAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: VerificationEmailDeliveryCountAggregateOutputType | null
+    _avg: VerificationEmailDeliveryAvgAggregateOutputType | null
+    _sum: VerificationEmailDeliverySumAggregateOutputType | null
+    _min: VerificationEmailDeliveryMinAggregateOutputType | null
+    _max: VerificationEmailDeliveryMaxAggregateOutputType | null
+  }
+
+  type GetVerificationEmailDeliveryGroupByPayload<T extends VerificationEmailDeliveryGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<VerificationEmailDeliveryGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof VerificationEmailDeliveryGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], VerificationEmailDeliveryGroupByOutputType[P]>
+            : GetScalarType<T[P], VerificationEmailDeliveryGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type VerificationEmailDeliverySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    otpId?: boolean
+    identifier?: boolean
+    userName?: boolean
+    status?: boolean
+    attempts?: boolean
+    nextAttemptAt?: boolean
+    lockedUntil?: boolean
+    sentAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["verificationEmailDelivery"]>
+
+
+
+  export type VerificationEmailDeliverySelectScalar = {
+    id?: boolean
+    otpId?: boolean
+    identifier?: boolean
+    userName?: boolean
+    status?: boolean
+    attempts?: boolean
+    nextAttemptAt?: boolean
+    lockedUntil?: boolean
+    sentAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type VerificationEmailDeliveryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "otpId" | "identifier" | "userName" | "status" | "attempts" | "nextAttemptAt" | "lockedUntil" | "sentAt" | "createdAt" | "updatedAt", ExtArgs["result"]["verificationEmailDelivery"]>
+
+  export type $VerificationEmailDeliveryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "VerificationEmailDelivery"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      otpId: string
+      identifier: string
+      userName: string | null
+      status: string
+      attempts: number
+      nextAttemptAt: Date
+      lockedUntil: Date
+      sentAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["verificationEmailDelivery"]>
+    composites: {}
+  }
+
+  type VerificationEmailDeliveryGetPayload<S extends boolean | null | undefined | VerificationEmailDeliveryDefaultArgs> = $Result.GetResult<Prisma.$VerificationEmailDeliveryPayload, S>
+
+  type VerificationEmailDeliveryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<VerificationEmailDeliveryFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: VerificationEmailDeliveryCountAggregateInputType | true
+    }
+
+  export interface VerificationEmailDeliveryDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['VerificationEmailDelivery'], meta: { name: 'VerificationEmailDelivery' } }
+    /**
+     * Find zero or one VerificationEmailDelivery that matches the filter.
+     * @param {VerificationEmailDeliveryFindUniqueArgs} args - Arguments to find a VerificationEmailDelivery
+     * @example
+     * // Get one VerificationEmailDelivery
+     * const verificationEmailDelivery = await prisma.verificationEmailDelivery.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends VerificationEmailDeliveryFindUniqueArgs>(args: SelectSubset<T, VerificationEmailDeliveryFindUniqueArgs<ExtArgs>>): Prisma__VerificationEmailDeliveryClient<$Result.GetResult<Prisma.$VerificationEmailDeliveryPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one VerificationEmailDelivery that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {VerificationEmailDeliveryFindUniqueOrThrowArgs} args - Arguments to find a VerificationEmailDelivery
+     * @example
+     * // Get one VerificationEmailDelivery
+     * const verificationEmailDelivery = await prisma.verificationEmailDelivery.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends VerificationEmailDeliveryFindUniqueOrThrowArgs>(args: SelectSubset<T, VerificationEmailDeliveryFindUniqueOrThrowArgs<ExtArgs>>): Prisma__VerificationEmailDeliveryClient<$Result.GetResult<Prisma.$VerificationEmailDeliveryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first VerificationEmailDelivery that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationEmailDeliveryFindFirstArgs} args - Arguments to find a VerificationEmailDelivery
+     * @example
+     * // Get one VerificationEmailDelivery
+     * const verificationEmailDelivery = await prisma.verificationEmailDelivery.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends VerificationEmailDeliveryFindFirstArgs>(args?: SelectSubset<T, VerificationEmailDeliveryFindFirstArgs<ExtArgs>>): Prisma__VerificationEmailDeliveryClient<$Result.GetResult<Prisma.$VerificationEmailDeliveryPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first VerificationEmailDelivery that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationEmailDeliveryFindFirstOrThrowArgs} args - Arguments to find a VerificationEmailDelivery
+     * @example
+     * // Get one VerificationEmailDelivery
+     * const verificationEmailDelivery = await prisma.verificationEmailDelivery.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends VerificationEmailDeliveryFindFirstOrThrowArgs>(args?: SelectSubset<T, VerificationEmailDeliveryFindFirstOrThrowArgs<ExtArgs>>): Prisma__VerificationEmailDeliveryClient<$Result.GetResult<Prisma.$VerificationEmailDeliveryPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more VerificationEmailDeliveries that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationEmailDeliveryFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all VerificationEmailDeliveries
+     * const verificationEmailDeliveries = await prisma.verificationEmailDelivery.findMany()
+     * 
+     * // Get first 10 VerificationEmailDeliveries
+     * const verificationEmailDeliveries = await prisma.verificationEmailDelivery.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const verificationEmailDeliveryWithIdOnly = await prisma.verificationEmailDelivery.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends VerificationEmailDeliveryFindManyArgs>(args?: SelectSubset<T, VerificationEmailDeliveryFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VerificationEmailDeliveryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a VerificationEmailDelivery.
+     * @param {VerificationEmailDeliveryCreateArgs} args - Arguments to create a VerificationEmailDelivery.
+     * @example
+     * // Create one VerificationEmailDelivery
+     * const VerificationEmailDelivery = await prisma.verificationEmailDelivery.create({
+     *   data: {
+     *     // ... data to create a VerificationEmailDelivery
+     *   }
+     * })
+     * 
+     */
+    create<T extends VerificationEmailDeliveryCreateArgs>(args: SelectSubset<T, VerificationEmailDeliveryCreateArgs<ExtArgs>>): Prisma__VerificationEmailDeliveryClient<$Result.GetResult<Prisma.$VerificationEmailDeliveryPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many VerificationEmailDeliveries.
+     * @param {VerificationEmailDeliveryCreateManyArgs} args - Arguments to create many VerificationEmailDeliveries.
+     * @example
+     * // Create many VerificationEmailDeliveries
+     * const verificationEmailDelivery = await prisma.verificationEmailDelivery.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends VerificationEmailDeliveryCreateManyArgs>(args?: SelectSubset<T, VerificationEmailDeliveryCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a VerificationEmailDelivery.
+     * @param {VerificationEmailDeliveryDeleteArgs} args - Arguments to delete one VerificationEmailDelivery.
+     * @example
+     * // Delete one VerificationEmailDelivery
+     * const VerificationEmailDelivery = await prisma.verificationEmailDelivery.delete({
+     *   where: {
+     *     // ... filter to delete one VerificationEmailDelivery
+     *   }
+     * })
+     * 
+     */
+    delete<T extends VerificationEmailDeliveryDeleteArgs>(args: SelectSubset<T, VerificationEmailDeliveryDeleteArgs<ExtArgs>>): Prisma__VerificationEmailDeliveryClient<$Result.GetResult<Prisma.$VerificationEmailDeliveryPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one VerificationEmailDelivery.
+     * @param {VerificationEmailDeliveryUpdateArgs} args - Arguments to update one VerificationEmailDelivery.
+     * @example
+     * // Update one VerificationEmailDelivery
+     * const verificationEmailDelivery = await prisma.verificationEmailDelivery.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends VerificationEmailDeliveryUpdateArgs>(args: SelectSubset<T, VerificationEmailDeliveryUpdateArgs<ExtArgs>>): Prisma__VerificationEmailDeliveryClient<$Result.GetResult<Prisma.$VerificationEmailDeliveryPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more VerificationEmailDeliveries.
+     * @param {VerificationEmailDeliveryDeleteManyArgs} args - Arguments to filter VerificationEmailDeliveries to delete.
+     * @example
+     * // Delete a few VerificationEmailDeliveries
+     * const { count } = await prisma.verificationEmailDelivery.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends VerificationEmailDeliveryDeleteManyArgs>(args?: SelectSubset<T, VerificationEmailDeliveryDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more VerificationEmailDeliveries.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationEmailDeliveryUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many VerificationEmailDeliveries
+     * const verificationEmailDelivery = await prisma.verificationEmailDelivery.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends VerificationEmailDeliveryUpdateManyArgs>(args: SelectSubset<T, VerificationEmailDeliveryUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one VerificationEmailDelivery.
+     * @param {VerificationEmailDeliveryUpsertArgs} args - Arguments to update or create a VerificationEmailDelivery.
+     * @example
+     * // Update or create a VerificationEmailDelivery
+     * const verificationEmailDelivery = await prisma.verificationEmailDelivery.upsert({
+     *   create: {
+     *     // ... data to create a VerificationEmailDelivery
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the VerificationEmailDelivery we want to update
+     *   }
+     * })
+     */
+    upsert<T extends VerificationEmailDeliveryUpsertArgs>(args: SelectSubset<T, VerificationEmailDeliveryUpsertArgs<ExtArgs>>): Prisma__VerificationEmailDeliveryClient<$Result.GetResult<Prisma.$VerificationEmailDeliveryPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more VerificationEmailDeliveries that matches the filter.
+     * @param {VerificationEmailDeliveryFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const verificationEmailDelivery = await prisma.verificationEmailDelivery.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: VerificationEmailDeliveryFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a VerificationEmailDelivery.
+     * @param {VerificationEmailDeliveryAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const verificationEmailDelivery = await prisma.verificationEmailDelivery.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: VerificationEmailDeliveryAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of VerificationEmailDeliveries.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationEmailDeliveryCountArgs} args - Arguments to filter VerificationEmailDeliveries to count.
+     * @example
+     * // Count the number of VerificationEmailDeliveries
+     * const count = await prisma.verificationEmailDelivery.count({
+     *   where: {
+     *     // ... the filter for the VerificationEmailDeliveries we want to count
+     *   }
+     * })
+    **/
+    count<T extends VerificationEmailDeliveryCountArgs>(
+      args?: Subset<T, VerificationEmailDeliveryCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], VerificationEmailDeliveryCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a VerificationEmailDelivery.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationEmailDeliveryAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends VerificationEmailDeliveryAggregateArgs>(args: Subset<T, VerificationEmailDeliveryAggregateArgs>): Prisma.PrismaPromise<GetVerificationEmailDeliveryAggregateType<T>>
+
+    /**
+     * Group by VerificationEmailDelivery.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationEmailDeliveryGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends VerificationEmailDeliveryGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: VerificationEmailDeliveryGroupByArgs['orderBy'] }
+        : { orderBy?: VerificationEmailDeliveryGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, VerificationEmailDeliveryGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetVerificationEmailDeliveryGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the VerificationEmailDelivery model
+   */
+  readonly fields: VerificationEmailDeliveryFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for VerificationEmailDelivery.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__VerificationEmailDeliveryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the VerificationEmailDelivery model
+   */
+  interface VerificationEmailDeliveryFieldRefs {
+    readonly id: FieldRef<"VerificationEmailDelivery", 'String'>
+    readonly otpId: FieldRef<"VerificationEmailDelivery", 'String'>
+    readonly identifier: FieldRef<"VerificationEmailDelivery", 'String'>
+    readonly userName: FieldRef<"VerificationEmailDelivery", 'String'>
+    readonly status: FieldRef<"VerificationEmailDelivery", 'String'>
+    readonly attempts: FieldRef<"VerificationEmailDelivery", 'Int'>
+    readonly nextAttemptAt: FieldRef<"VerificationEmailDelivery", 'DateTime'>
+    readonly lockedUntil: FieldRef<"VerificationEmailDelivery", 'DateTime'>
+    readonly sentAt: FieldRef<"VerificationEmailDelivery", 'DateTime'>
+    readonly createdAt: FieldRef<"VerificationEmailDelivery", 'DateTime'>
+    readonly updatedAt: FieldRef<"VerificationEmailDelivery", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * VerificationEmailDelivery findUnique
+   */
+  export type VerificationEmailDeliveryFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationEmailDelivery
+     */
+    select?: VerificationEmailDeliverySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationEmailDelivery
+     */
+    omit?: VerificationEmailDeliveryOmit<ExtArgs> | null
+    /**
+     * Filter, which VerificationEmailDelivery to fetch.
+     */
+    where: VerificationEmailDeliveryWhereUniqueInput
+  }
+
+  /**
+   * VerificationEmailDelivery findUniqueOrThrow
+   */
+  export type VerificationEmailDeliveryFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationEmailDelivery
+     */
+    select?: VerificationEmailDeliverySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationEmailDelivery
+     */
+    omit?: VerificationEmailDeliveryOmit<ExtArgs> | null
+    /**
+     * Filter, which VerificationEmailDelivery to fetch.
+     */
+    where: VerificationEmailDeliveryWhereUniqueInput
+  }
+
+  /**
+   * VerificationEmailDelivery findFirst
+   */
+  export type VerificationEmailDeliveryFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationEmailDelivery
+     */
+    select?: VerificationEmailDeliverySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationEmailDelivery
+     */
+    omit?: VerificationEmailDeliveryOmit<ExtArgs> | null
+    /**
+     * Filter, which VerificationEmailDelivery to fetch.
+     */
+    where?: VerificationEmailDeliveryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VerificationEmailDeliveries to fetch.
+     */
+    orderBy?: VerificationEmailDeliveryOrderByWithRelationInput | VerificationEmailDeliveryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for VerificationEmailDeliveries.
+     */
+    cursor?: VerificationEmailDeliveryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VerificationEmailDeliveries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VerificationEmailDeliveries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VerificationEmailDeliveries.
+     */
+    distinct?: VerificationEmailDeliveryScalarFieldEnum | VerificationEmailDeliveryScalarFieldEnum[]
+  }
+
+  /**
+   * VerificationEmailDelivery findFirstOrThrow
+   */
+  export type VerificationEmailDeliveryFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationEmailDelivery
+     */
+    select?: VerificationEmailDeliverySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationEmailDelivery
+     */
+    omit?: VerificationEmailDeliveryOmit<ExtArgs> | null
+    /**
+     * Filter, which VerificationEmailDelivery to fetch.
+     */
+    where?: VerificationEmailDeliveryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VerificationEmailDeliveries to fetch.
+     */
+    orderBy?: VerificationEmailDeliveryOrderByWithRelationInput | VerificationEmailDeliveryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for VerificationEmailDeliveries.
+     */
+    cursor?: VerificationEmailDeliveryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VerificationEmailDeliveries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VerificationEmailDeliveries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of VerificationEmailDeliveries.
+     */
+    distinct?: VerificationEmailDeliveryScalarFieldEnum | VerificationEmailDeliveryScalarFieldEnum[]
+  }
+
+  /**
+   * VerificationEmailDelivery findMany
+   */
+  export type VerificationEmailDeliveryFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationEmailDelivery
+     */
+    select?: VerificationEmailDeliverySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationEmailDelivery
+     */
+    omit?: VerificationEmailDeliveryOmit<ExtArgs> | null
+    /**
+     * Filter, which VerificationEmailDeliveries to fetch.
+     */
+    where?: VerificationEmailDeliveryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of VerificationEmailDeliveries to fetch.
+     */
+    orderBy?: VerificationEmailDeliveryOrderByWithRelationInput | VerificationEmailDeliveryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing VerificationEmailDeliveries.
+     */
+    cursor?: VerificationEmailDeliveryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` VerificationEmailDeliveries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` VerificationEmailDeliveries.
+     */
+    skip?: number
+    distinct?: VerificationEmailDeliveryScalarFieldEnum | VerificationEmailDeliveryScalarFieldEnum[]
+  }
+
+  /**
+   * VerificationEmailDelivery create
+   */
+  export type VerificationEmailDeliveryCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationEmailDelivery
+     */
+    select?: VerificationEmailDeliverySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationEmailDelivery
+     */
+    omit?: VerificationEmailDeliveryOmit<ExtArgs> | null
+    /**
+     * The data needed to create a VerificationEmailDelivery.
+     */
+    data: XOR<VerificationEmailDeliveryCreateInput, VerificationEmailDeliveryUncheckedCreateInput>
+  }
+
+  /**
+   * VerificationEmailDelivery createMany
+   */
+  export type VerificationEmailDeliveryCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many VerificationEmailDeliveries.
+     */
+    data: VerificationEmailDeliveryCreateManyInput | VerificationEmailDeliveryCreateManyInput[]
+  }
+
+  /**
+   * VerificationEmailDelivery update
+   */
+  export type VerificationEmailDeliveryUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationEmailDelivery
+     */
+    select?: VerificationEmailDeliverySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationEmailDelivery
+     */
+    omit?: VerificationEmailDeliveryOmit<ExtArgs> | null
+    /**
+     * The data needed to update a VerificationEmailDelivery.
+     */
+    data: XOR<VerificationEmailDeliveryUpdateInput, VerificationEmailDeliveryUncheckedUpdateInput>
+    /**
+     * Choose, which VerificationEmailDelivery to update.
+     */
+    where: VerificationEmailDeliveryWhereUniqueInput
+  }
+
+  /**
+   * VerificationEmailDelivery updateMany
+   */
+  export type VerificationEmailDeliveryUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update VerificationEmailDeliveries.
+     */
+    data: XOR<VerificationEmailDeliveryUpdateManyMutationInput, VerificationEmailDeliveryUncheckedUpdateManyInput>
+    /**
+     * Filter which VerificationEmailDeliveries to update
+     */
+    where?: VerificationEmailDeliveryWhereInput
+    /**
+     * Limit how many VerificationEmailDeliveries to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * VerificationEmailDelivery upsert
+   */
+  export type VerificationEmailDeliveryUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationEmailDelivery
+     */
+    select?: VerificationEmailDeliverySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationEmailDelivery
+     */
+    omit?: VerificationEmailDeliveryOmit<ExtArgs> | null
+    /**
+     * The filter to search for the VerificationEmailDelivery to update in case it exists.
+     */
+    where: VerificationEmailDeliveryWhereUniqueInput
+    /**
+     * In case the VerificationEmailDelivery found by the `where` argument doesn't exist, create a new VerificationEmailDelivery with this data.
+     */
+    create: XOR<VerificationEmailDeliveryCreateInput, VerificationEmailDeliveryUncheckedCreateInput>
+    /**
+     * In case the VerificationEmailDelivery was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<VerificationEmailDeliveryUpdateInput, VerificationEmailDeliveryUncheckedUpdateInput>
+  }
+
+  /**
+   * VerificationEmailDelivery delete
+   */
+  export type VerificationEmailDeliveryDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationEmailDelivery
+     */
+    select?: VerificationEmailDeliverySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationEmailDelivery
+     */
+    omit?: VerificationEmailDeliveryOmit<ExtArgs> | null
+    /**
+     * Filter which VerificationEmailDelivery to delete.
+     */
+    where: VerificationEmailDeliveryWhereUniqueInput
+  }
+
+  /**
+   * VerificationEmailDelivery deleteMany
+   */
+  export type VerificationEmailDeliveryDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which VerificationEmailDeliveries to delete
+     */
+    where?: VerificationEmailDeliveryWhereInput
+    /**
+     * Limit how many VerificationEmailDeliveries to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * VerificationEmailDelivery findRaw
+   */
+  export type VerificationEmailDeliveryFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * VerificationEmailDelivery aggregateRaw
+   */
+  export type VerificationEmailDeliveryAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * VerificationEmailDelivery without action
+   */
+  export type VerificationEmailDeliveryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerificationEmailDelivery
+     */
+    select?: VerificationEmailDeliverySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerificationEmailDelivery
+     */
+    omit?: VerificationEmailDeliveryOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Model Project
    */
 
@@ -17055,6 +18178,23 @@ export namespace Prisma {
   export type MessageRequestScalarFieldEnum = (typeof MessageRequestScalarFieldEnum)[keyof typeof MessageRequestScalarFieldEnum]
 
 
+  export const VerificationEmailDeliveryScalarFieldEnum: {
+    id: 'id',
+    otpId: 'otpId',
+    identifier: 'identifier',
+    userName: 'userName',
+    status: 'status',
+    attempts: 'attempts',
+    nextAttemptAt: 'nextAttemptAt',
+    lockedUntil: 'lockedUntil',
+    sentAt: 'sentAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type VerificationEmailDeliveryScalarFieldEnum = (typeof VerificationEmailDeliveryScalarFieldEnum)[keyof typeof VerificationEmailDeliveryScalarFieldEnum]
+
+
   export const ProjectScalarFieldEnum: {
     id: 'id',
     name: 'name',
@@ -17231,6 +18371,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Int'
+   */
+  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+  /**
+   * Reference to a field of type 'Int[]'
+   */
+  export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+  /**
    * Reference to a field of type 'ProjectStatus'
    */
   export type EnumProjectStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProjectStatus'>
@@ -17245,16 +18399,16 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Int'
+   * Reference to a field of type 'Float'
    */
-  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
     
 
 
   /**
-   * Reference to a field of type 'Int[]'
+   * Reference to a field of type 'Float[]'
    */
-  export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
   /**
    * Deep Input Types
@@ -18242,6 +19396,90 @@ export namespace Prisma {
     message?: StringNullableWithAggregatesFilter<"MessageRequest"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"MessageRequest"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"MessageRequest"> | Date | string
+  }
+
+  export type VerificationEmailDeliveryWhereInput = {
+    AND?: VerificationEmailDeliveryWhereInput | VerificationEmailDeliveryWhereInput[]
+    OR?: VerificationEmailDeliveryWhereInput[]
+    NOT?: VerificationEmailDeliveryWhereInput | VerificationEmailDeliveryWhereInput[]
+    id?: StringFilter<"VerificationEmailDelivery"> | string
+    otpId?: StringFilter<"VerificationEmailDelivery"> | string
+    identifier?: StringFilter<"VerificationEmailDelivery"> | string
+    userName?: StringNullableFilter<"VerificationEmailDelivery"> | string | null
+    status?: StringFilter<"VerificationEmailDelivery"> | string
+    attempts?: IntFilter<"VerificationEmailDelivery"> | number
+    nextAttemptAt?: DateTimeFilter<"VerificationEmailDelivery"> | Date | string
+    lockedUntil?: DateTimeFilter<"VerificationEmailDelivery"> | Date | string
+    sentAt?: DateTimeNullableFilter<"VerificationEmailDelivery"> | Date | string | null
+    createdAt?: DateTimeFilter<"VerificationEmailDelivery"> | Date | string
+    updatedAt?: DateTimeFilter<"VerificationEmailDelivery"> | Date | string
+  }
+
+  export type VerificationEmailDeliveryOrderByWithRelationInput = {
+    id?: SortOrder
+    otpId?: SortOrder
+    identifier?: SortOrder
+    userName?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    nextAttemptAt?: SortOrder
+    lockedUntil?: SortOrder
+    sentAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type VerificationEmailDeliveryWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    otpId?: string
+    AND?: VerificationEmailDeliveryWhereInput | VerificationEmailDeliveryWhereInput[]
+    OR?: VerificationEmailDeliveryWhereInput[]
+    NOT?: VerificationEmailDeliveryWhereInput | VerificationEmailDeliveryWhereInput[]
+    identifier?: StringFilter<"VerificationEmailDelivery"> | string
+    userName?: StringNullableFilter<"VerificationEmailDelivery"> | string | null
+    status?: StringFilter<"VerificationEmailDelivery"> | string
+    attempts?: IntFilter<"VerificationEmailDelivery"> | number
+    nextAttemptAt?: DateTimeFilter<"VerificationEmailDelivery"> | Date | string
+    lockedUntil?: DateTimeFilter<"VerificationEmailDelivery"> | Date | string
+    sentAt?: DateTimeNullableFilter<"VerificationEmailDelivery"> | Date | string | null
+    createdAt?: DateTimeFilter<"VerificationEmailDelivery"> | Date | string
+    updatedAt?: DateTimeFilter<"VerificationEmailDelivery"> | Date | string
+  }, "id" | "otpId">
+
+  export type VerificationEmailDeliveryOrderByWithAggregationInput = {
+    id?: SortOrder
+    otpId?: SortOrder
+    identifier?: SortOrder
+    userName?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    nextAttemptAt?: SortOrder
+    lockedUntil?: SortOrder
+    sentAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: VerificationEmailDeliveryCountOrderByAggregateInput
+    _avg?: VerificationEmailDeliveryAvgOrderByAggregateInput
+    _max?: VerificationEmailDeliveryMaxOrderByAggregateInput
+    _min?: VerificationEmailDeliveryMinOrderByAggregateInput
+    _sum?: VerificationEmailDeliverySumOrderByAggregateInput
+  }
+
+  export type VerificationEmailDeliveryScalarWhereWithAggregatesInput = {
+    AND?: VerificationEmailDeliveryScalarWhereWithAggregatesInput | VerificationEmailDeliveryScalarWhereWithAggregatesInput[]
+    OR?: VerificationEmailDeliveryScalarWhereWithAggregatesInput[]
+    NOT?: VerificationEmailDeliveryScalarWhereWithAggregatesInput | VerificationEmailDeliveryScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"VerificationEmailDelivery"> | string
+    otpId?: StringWithAggregatesFilter<"VerificationEmailDelivery"> | string
+    identifier?: StringWithAggregatesFilter<"VerificationEmailDelivery"> | string
+    userName?: StringNullableWithAggregatesFilter<"VerificationEmailDelivery"> | string | null
+    status?: StringWithAggregatesFilter<"VerificationEmailDelivery"> | string
+    attempts?: IntWithAggregatesFilter<"VerificationEmailDelivery"> | number
+    nextAttemptAt?: DateTimeWithAggregatesFilter<"VerificationEmailDelivery"> | Date | string
+    lockedUntil?: DateTimeWithAggregatesFilter<"VerificationEmailDelivery"> | Date | string
+    sentAt?: DateTimeNullableWithAggregatesFilter<"VerificationEmailDelivery"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"VerificationEmailDelivery"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"VerificationEmailDelivery"> | Date | string
   }
 
   export type ProjectWhereInput = {
@@ -19343,6 +20581,100 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type VerificationEmailDeliveryCreateInput = {
+    id?: string
+    otpId: string
+    identifier: string
+    userName?: string | null
+    status?: string
+    attempts?: number
+    nextAttemptAt?: Date | string
+    lockedUntil?: Date | string
+    sentAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VerificationEmailDeliveryUncheckedCreateInput = {
+    id?: string
+    otpId: string
+    identifier: string
+    userName?: string | null
+    status?: string
+    attempts?: number
+    nextAttemptAt?: Date | string
+    lockedUntil?: Date | string
+    sentAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VerificationEmailDeliveryUpdateInput = {
+    otpId?: StringFieldUpdateOperationsInput | string
+    identifier?: StringFieldUpdateOperationsInput | string
+    userName?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lockedUntil?: DateTimeFieldUpdateOperationsInput | Date | string
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VerificationEmailDeliveryUncheckedUpdateInput = {
+    otpId?: StringFieldUpdateOperationsInput | string
+    identifier?: StringFieldUpdateOperationsInput | string
+    userName?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lockedUntil?: DateTimeFieldUpdateOperationsInput | Date | string
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VerificationEmailDeliveryCreateManyInput = {
+    id?: string
+    otpId: string
+    identifier: string
+    userName?: string | null
+    status?: string
+    attempts?: number
+    nextAttemptAt?: Date | string
+    lockedUntil?: Date | string
+    sentAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VerificationEmailDeliveryUpdateManyMutationInput = {
+    otpId?: StringFieldUpdateOperationsInput | string
+    identifier?: StringFieldUpdateOperationsInput | string
+    userName?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lockedUntil?: DateTimeFieldUpdateOperationsInput | Date | string
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VerificationEmailDeliveryUncheckedUpdateManyInput = {
+    otpId?: StringFieldUpdateOperationsInput | string
+    identifier?: StringFieldUpdateOperationsInput | string
+    userName?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lockedUntil?: DateTimeFieldUpdateOperationsInput | Date | string
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ProjectCreateInput = {
     id?: string
     name: string
@@ -20271,6 +21603,83 @@ export namespace Prisma {
     _max?: NestedEnumRequestStatusFilter<$PrismaModel>
   }
 
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type VerificationEmailDeliveryCountOrderByAggregateInput = {
+    id?: SortOrder
+    otpId?: SortOrder
+    identifier?: SortOrder
+    userName?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    nextAttemptAt?: SortOrder
+    lockedUntil?: SortOrder
+    sentAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type VerificationEmailDeliveryAvgOrderByAggregateInput = {
+    attempts?: SortOrder
+  }
+
+  export type VerificationEmailDeliveryMaxOrderByAggregateInput = {
+    id?: SortOrder
+    otpId?: SortOrder
+    identifier?: SortOrder
+    userName?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    nextAttemptAt?: SortOrder
+    lockedUntil?: SortOrder
+    sentAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type VerificationEmailDeliveryMinOrderByAggregateInput = {
+    id?: SortOrder
+    otpId?: SortOrder
+    identifier?: SortOrder
+    userName?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    nextAttemptAt?: SortOrder
+    lockedUntil?: SortOrder
+    sentAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type VerificationEmailDeliverySumOrderByAggregateInput = {
+    attempts?: SortOrder
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
   export type EnumProjectStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.ProjectStatus | EnumProjectStatusFieldRefInput<$PrismaModel>
     in?: $Enums.ProjectStatus[] | ListEnumProjectStatusFieldRefInput<$PrismaModel>
@@ -21062,6 +22471,14 @@ export namespace Prisma {
     update?: XOR<XOR<CommunicationUserUpdateToOneWithWhereWithoutReceivedMessageRequestsInput, CommunicationUserUpdateWithoutReceivedMessageRequestsInput>, CommunicationUserUncheckedUpdateWithoutReceivedMessageRequestsInput>
   }
 
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type CommunicationUserCreateNestedManyWithoutProjectInput = {
     create?: XOR<CommunicationUserCreateWithoutProjectInput, CommunicationUserUncheckedCreateWithoutProjectInput> | CommunicationUserCreateWithoutProjectInput[] | CommunicationUserUncheckedCreateWithoutProjectInput[]
     connectOrCreate?: CommunicationUserCreateOrConnectWithoutProjectInput | CommunicationUserCreateOrConnectWithoutProjectInput[]
@@ -21515,6 +22932,33 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumRequestStatusFilter<$PrismaModel>
     _max?: NestedEnumRequestStatusFilter<$PrismaModel>
+  }
+
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type NestedEnumProjectStatusFilter<$PrismaModel = never> = {

@@ -26,8 +26,7 @@ export class CommunicationUserService {
         name: dto.name.trim(),
         email: dto.email ? dto.email.toLowerCase().trim() : null,
         avatar: dto.avatar || null,
-        isOnline: true,
-        lastSeenAt: null,
+        isOnline: false,
       },
       update: {
         name: dto.name.trim(),
@@ -35,8 +34,6 @@ export class CommunicationUserService {
           ? { email: dto.email ? dto.email.toLowerCase().trim() : null }
           : {}),
         ...(dto.avatar !== undefined ? { avatar: dto.avatar || null } : {}),
-        isOnline: true,
-        lastSeenAt: null,
       },
     });
 

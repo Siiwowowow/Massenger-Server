@@ -50,9 +50,9 @@ export class AuthController {
     const headers = new Headers(req.headers as any);
     const result = await this.authService.register(dto, headers, file);
     return {
-      message: result.verificationEmailSent
-        ? 'User registered successfully. Verification email sent.'
-        : 'Account created, but verification email delivery failed. Please resend the code.',
+      message: result.verificationEmailSent === false
+        ? 'Account created, but email delivery is unavailable. Please resend the code.'
+        : 'Account created. Your verification email is being sent.',
       data: result,
     };
   }
@@ -148,20 +148,31 @@ export class AuthController {
 
   @Public()
   @Post('resend-verification-otp')
+  @UsePipes(new ZodValidationPipe(forgotPasswordSchema))
   async resendVerificationOtp(@Body() body: { email: string }) {
     await this.authService.resendVerificationOtp(body.email);
     return {
-      message: 'A verification code has been sent to your email.',
+      message: 'Your verification email is being sent. Your current unexpired code remains valid.',
+      data: { retryAfter: 30 },
     };
   }
 
   @Public()
   @Post('resend-otp')
+  @UsePipes(new ZodValidationPipe(forgotPasswordSchema))
   async resendOtp(@Body() body: { email: string }) {
     await this.authService.resendVerificationOtp(body.email);
     return {
-      message: 'A verification code has been sent to your email.',
+      message: 'Your verification email is being sent. Your current unexpired code remains valid.',
+      data: { retryAfter: 30 },
     };
+  }
+
+  @Public()
+  @Post('verification-email-status')
+  @UsePipes(new ZodValidationPipe(forgotPasswordSchema))
+  async verificationEmailStatus(@Body() body: { email: string }) {
+    return { message: 'Verification email delivery status', data: await this.authService.verificationEmailStatus(body.email) };
   }
 
   // Native Better Auth router fallback for /api/v1/auth/* (OAuth callbacks, session internals, etc.)

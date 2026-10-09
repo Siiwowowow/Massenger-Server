@@ -590,6 +590,7 @@ export class ConversationService {
           senderId: true,
           deletedAt: true,
           createdAt: true,
+          receipts: { select: { userId: true, deliveredAt: true, readAt: true } },
         },
       },
     };
@@ -607,6 +608,9 @@ export class ConversationService {
           : lastMsg.content
         : null,
       lastMessageSenderId: lastMsg?.senderId || null,
+      lastMessageId: lastMsg?.id || null,
+      lastMessageStatus: !lastMsg ? null : lastMsg.receipts?.some((receipt: any) => receipt.readAt) ? 'read'
+        : lastMsg.receipts?.some((receipt: any) => receipt.deliveredAt) ? 'delivered' : 'sent',
       lastMessageAt: lastMsg?.createdAt || conv.lastMessageAt || null,
     };
   }

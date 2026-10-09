@@ -15,6 +15,7 @@ export interface SendMailOptions {
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
   private transporter!: nodemailer.Transporter;
+  private readonly templates = new Map<string, ejs.TemplateFunction>();
 
   constructor() {
     this.initTransporter();
@@ -31,6 +32,9 @@ export class EmailService {
       host,
       port,
       secure: isSecure,
+      pool: true,
+      maxConnections: 3,
+      maxMessages: 100,
       connectionTimeout: 5000,
       greetingTimeout: 5000,
       socketTimeout: 10000,
@@ -109,6 +113,8 @@ export class EmailService {
   }
 
   async renderTemplate(templateName: string, data: Record<string, any>): Promise<string> {
+    const cached = this.templates.get(templateName);
+    if (cached) return cached({ ...data, appName: 'Plush Massenger' });
     const candidatePaths = [
       path.join(process.cwd(), 'src', 'app', 'templates', `${templateName}.ejs`),
       path.join(process.cwd(), 'dist', 'app', 'templates', `${templateName}.ejs`),
@@ -124,7 +130,9 @@ export class EmailService {
     }
 
     const templateContent = fs.readFileSync(templatePath, 'utf-8');
-    return ejs.render(templateContent, {
+    const template = ejs.compile(templateContent);
+    this.templates.set(templateName, template);
+    return template({
       ...data,
       appName: 'Plush Massenger',
     });

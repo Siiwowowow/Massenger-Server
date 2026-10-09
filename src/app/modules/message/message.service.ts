@@ -1,4 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
+import { RealtimePublisher } from '../realtime/realtime-publisher.module';
+import { REALTIME_EVENTS } from '../realtime/realtime.constants';
 import { PrismaService } from '../../database/prisma.service';
 import {
   NotFoundException,
@@ -16,8 +18,9 @@ import { isValidObjectId } from '../../common/utils/jwt/jwt.util';
 @Injectable()
 export class MessageService {
   private readonly logger = new Logger(MessageService.name);
+  private readonly pendingSends = new Map<string, Promise<any>>();
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, @Optional() private readonly publisher?: RealtimePublisher) {}
 
   /**
    * Reusable check: verify that a conversation exists in the project and the user is a participant
@@ -106,37 +109,41 @@ export class MessageService {
     senderId: string,
     dto: SendMessageDto,
   ) {
+    const rawClientId = dto.clientMessageId || (dto.metadata as Record<string, any> | undefined)?.clientMessageId;
+    const clientId = typeof rawClientId === 'string' ? rawClientId : undefined;
+    if (!clientId) return this.persistMessage(projectId, conversationId, senderId, dto);
+    const key = JSON.stringify([projectId, conversationId, senderId, clientId]);
+    const pending = this.pendingSends.get(key);
+    if (pending) return pending;
+    const sending = this.persistMessage(projectId, conversationId, senderId, dto);
+    this.pendingSends.set(key, sending);
+    try { return await sending; } finally { this.pendingSends.delete(key); }
+  }
+
+  private async persistMessage(projectId: string, conversationId: string, senderId: string, dto: SendMessageDto) {
     // 1. Verify conversation access and membership
-    await this.assertConversationAccess(projectId, conversationId, senderId);
+    const conversation = await this.assertConversationAccess(projectId, conversationId, senderId);
 
     // 2. Duplicate message protection / client retry idempotency
-    const clientMessageId =
+    const rawClientMessageId =
       dto.clientMessageId ||
       (dto.metadata && typeof dto.metadata === 'object'
         ? (dto.metadata as Record<string, any>).clientMessageId
         : undefined);
+    const clientMessageId = typeof rawClientMessageId === 'string' ? rawClientMessageId : undefined;
 
     if (clientMessageId) {
-      const recentMessages = await this.prisma.message.findMany({
-        where: {
-          conversationId,
-          senderId,
-        },
-        take: 20,
-        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-        include: this.getMessageInclude(),
-      });
-
-      const existing = recentMessages.find((msg) => {
-        const meta = msg.metadata as Record<string, any> | null;
-        return meta?.clientMessageId === clientMessageId;
-      });
-
-      if (existing) {
-        this.logger.log(
-          `Idempotent duplicate message detected for clientMessageId ${clientMessageId}: returning existing message ${existing.id}`,
-        );
-        return this.formatMessage(existing);
+      const matches = await this.prisma.message.findRaw({
+        filter: { conversationId: { $oid: conversationId }, senderId: { $oid: senderId },
+          'metadata.clientMessageId': clientMessageId },
+        options: { limit: 1, projection: { _id: 1 } },
+      }) as unknown as Array<{ _id: { $oid: string } }>;
+      const existingId = matches[0]?._id?.$oid;
+      if (existingId) {
+        const persisted = await this.prisma.message.findUnique({
+          where: { id: existingId }, include: this.getMessageInclude(),
+        });
+        return this.formatMessage(persisted);
       }
     }
 
@@ -156,8 +163,13 @@ export class MessageService {
         content: dto.content.trim(),
         metadata: metadataPayload,
       },
-      include: this.getMessageInclude(),
+      include: this.getMessageInclude(false),
     });
+
+    // Deliver as soon as the message is durable, before sidebar metadata maintenance.
+    const formatted = this.formatMessage(message);
+    await this.publisher?.publish(conversationId, REALTIME_EVENTS.SERVER.MESSAGE_NEW, formatted,
+      conversation.participants.map((participant) => participant.userId));
 
     // 4. Touch conversation lastMessageAt and updatedAt
     await this.prisma.conversation.update({
@@ -166,13 +178,13 @@ export class MessageService {
         lastMessageAt: message.createdAt,
         updatedAt: new Date(),
       },
-    });
+    }).catch((error) => this.logger.error('Message saved but conversation timestamp update failed', error));
 
     this.logger.log(
       `Message ${message.id} sent to conversation ${conversationId} by ${senderId}`,
     );
 
-    return this.formatMessage(message);
+    return formatted;
   }
 
   /**
@@ -392,6 +404,10 @@ export class MessageService {
       type: message.type,
       content: isDeleted ? null : message.content,
       metadata: isDeleted ? null : message.metadata,
+      clientMessageId: message.metadata?.clientMessageId,
+      receipts: message.receipts || [],
+      status: message.receipts?.some((receipt: any) => receipt.readAt) ? 'READ'
+        : message.receipts?.some((receipt: any) => receipt.deliveredAt) ? 'DELIVERED' : 'SENT',
       createdAt: message.createdAt,
       updatedAt: message.updatedAt,
       deletedAt: message.deletedAt || null,
@@ -401,8 +417,9 @@ export class MessageService {
   /**
    * Efficient relation include avoiding N+1 and sensitive data leakage
    */
-  private getMessageInclude() {
+  private getMessageInclude(includeReceipts = true) {
     return {
+      receipts: includeReceipts ? { select: { messageId: true, userId: true, deliveredAt: true, readAt: true } } : false,
       sender: {
         select: {
           id: true,
