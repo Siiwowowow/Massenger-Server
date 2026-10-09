@@ -50,7 +50,9 @@ export class AuthController {
     const headers = new Headers(req.headers as any);
     const result = await this.authService.register(dto, headers, file);
     return {
-      message: 'User registered successfully. Verification email sent.',
+      message: result.verificationEmailSent
+        ? 'User registered successfully. Verification email sent.'
+        : 'Account created, but verification email delivery failed. Please resend the code.',
       data: result,
     };
   }

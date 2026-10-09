@@ -77,7 +77,7 @@ export class AuthService {
         TokenType.EMAIL_VERIFICATION,
         15, // 15 minutes
       );
-      await this.emailService.sendOtpEmail(dto.email.toLowerCase(), otp, dto.name);
+      const verificationEmailSent = await this.emailService.sendOtpEmail(dto.email.toLowerCase(), otp, dto.name);
 
       const user = response.user as any;
       const tokens = JwtUtil.generateTokens({
@@ -89,6 +89,7 @@ export class AuthService {
       });
 
       return {
+        verificationEmailSent,
         user: response.user,
         session: (response as any).session || null,
         token: (response as any).token || (response as any).session?.token,
@@ -470,7 +471,8 @@ export class AuthService {
       15, // 15 mins
     );
 
-    await this.emailService.sendOtpEmail(user.email, otp, user.name);
+    const sent = await this.emailService.sendOtpEmail(user.email, otp, user.name);
+    if (!sent) throw new BadRequestException('Unable to send verification email. Please try resending the code.');
     return true;
   }
 }

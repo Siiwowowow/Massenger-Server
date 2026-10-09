@@ -9,11 +9,18 @@
   },
   "rewrites": [
     {
+      "source": "/api/email-relay",
+      "destination": "/api/email-relay"
+    },
+    {
       "source": "/(.*)",
       "destination": "/api"
     }
   ],
   "functions": {
+    "api/email-relay.js": {
+      "maxDuration": 30
+    },
     "api/**/*.js": {
       "includeFiles": "dist/app/templates/**/*.ejs"
     }

@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import * as ejs from 'ejs';
 import * as path from 'path';
@@ -12,7 +12,7 @@ export interface SendMailOptions {
 }
 
 @Injectable()
-export class EmailService implements OnModuleInit {
+export class EmailService {
   private readonly logger = new Logger(EmailService.name);
   private transporter!: nodemailer.Transporter;
 
@@ -31,6 +31,9 @@ export class EmailService implements OnModuleInit {
       host,
       port,
       secure: isSecure,
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 10000,
       auth: {
         user,
         pass,
@@ -38,7 +41,7 @@ export class EmailService implements OnModuleInit {
     });
   }
 
-  async onModuleInit() {
+  async verifyTransport() {
     try {
       const user = process.env.EMAIL_SENDER_SMTP_USER || process.env.SMTP_USER;
       const pass = process.env.EMAIL_SENDER_SMTP_PASS || process.env.SMTP_PASS;
@@ -66,6 +69,23 @@ export class EmailService implements OnModuleInit {
       if (process.env.NODE_ENV === 'test') {
         this.logger.debug(`[Mock Email] To: ${options.to}, Subject: ${options.subject}`);
         return true;
+      }
+
+      // Render remains the primary backend; only email delivery uses Vercel.
+      if (process.env.EMAIL_RELAY_URL && !process.env.VERCEL) {
+        if (!process.env.EMAIL_RELAY_SECRET) throw new Error('EMAIL_RELAY_SECRET is required');
+        const response = await fetch(process.env.EMAIL_RELAY_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${process.env.EMAIL_RELAY_SECRET}`,
+          },
+          body: JSON.stringify(options),
+          signal: AbortSignal.timeout(15000),
+        });
+        if (!response.ok) throw new Error(`Email relay failed (${response.status})`);
+        const result = await response.json() as { success?: boolean };
+        return result.success === true;
       }
 
       await this.transporter.sendMail({
