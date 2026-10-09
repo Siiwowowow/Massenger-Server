@@ -9,7 +9,7 @@ export const envSchema = z.object({
   FRONTEND_URL: z.string().optional(),
   API_PREFIX: z.string().default('api/v1'),
 
-  DATABASE_URL: z.string().default('mongodb://localhost:27017/primary_backend_db'),
+  DATABASE_URL: z.string().default('mongodb://localhost:27017/Plus-Massenger'),
 
   BETTER_AUTH_SECRET: z.string().min(16, 'BETTER_AUTH_SECRET must be at least 16 characters'),
   BETTER_AUTH_URL: z.string().default('http://localhost:5000'),
@@ -43,7 +43,7 @@ export const envSchema = z.object({
   EMAIL_SENDER_SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   EMAIL_SENDER_SMTP_PASS: z.string().optional(),
-  SMTP_FROM_NAME: z.string().default('NestJS Backend'),
+  SMTP_FROM_NAME: z.string().default('Plush Massenger'),
   SMTP_FROM_EMAIL: z.string().optional(),
   EMAIL_SENDER_SMTP_FROM: z.string().optional(),
 

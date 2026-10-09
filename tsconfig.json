@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "Node16",
+    "moduleResolution": "Node16",
     
     "declaration": true,
     "removeComments": true,
@@ -12,7 +12,6 @@
     "target": "ES2022",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
@@ -21,17 +20,17 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@/*": ["src/*"],
-      "@app/*": ["src/app/*"],
-      "@config/*": ["src/app/config/*"],
-      "@common/*": ["src/app/common/*"],
-      "@database/*": ["src/app/database/*"],
-      "@infrastructure/*": ["src/app/infrastructure/*"],
-      "@auth/*": ["src/app/auth/*"],
-      "@graphql/*": ["src/app/graphql/*"],
-      "@modules/*": ["src/app/modules/*"],
-      "@shared/*": ["src/app/shared/*"],
-      "@generated/*": ["src/generated/*"]
+      "@/*": ["./src/*"],
+      "@app/*": ["./src/app/*"],
+      "@config/*": ["./src/app/config/*"],
+      "@common/*": ["./src/app/common/*"],
+      "@database/*": ["./src/app/database/*"],
+      "@infrastructure/*": ["./src/app/infrastructure/*"],
+      "@auth/*": ["./src/app/auth/*"],
+      "@graphql/*": ["./src/app/graphql/*"],
+      "@modules/*": ["./src/app/modules/*"],
+      "@shared/*": ["./src/app/shared/*"],
+      "@generated/*": ["./src/generated/*"]
     }
   }
 }

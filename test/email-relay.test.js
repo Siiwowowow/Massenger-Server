@@ -6,7 +6,7 @@ test('relay rejects unauthorized and invalid requests and awaits SMTP delivery',
   const previous = { ...process.env };
   const original = nodemailer.createTransport;
   let delivered;
-  nodemailer.createTransport = () => ({ sendMail: async (mail) => { delivered = mail; } });
+  nodemailer.createTransport = () => ({ sendMail: async (mail) => { delivered = mail; return { accepted: [mail.to] }; } });
   process.env.EMAIL_RELAY_SECRET = 'test-secret';
   process.env.SMTP_USER = 'sender@example.com';
   process.env.SMTP_PASS = 'test-password';
@@ -32,6 +32,7 @@ test('relay rejects unauthorized and invalid requests and awaits SMTP delivery',
     assert.equal(result.code, 200);
     assert.equal(result.body.success, true);
     assert.equal(delivered.to, 'user@example.com');
+    assert.equal(delivered.from.name, 'Plush Massenger');
     assert.equal(delivered.from.address, process.env.EMAIL_SENDER_SMTP_FROM || process.env.SMTP_FROM_EMAIL || process.env.EMAIL_SENDER_SMTP_USER || 'sender@example.com');
   } finally {
     nodemailer.createTransport = original;

@@ -10,7 +10,10 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ success: false });
   }
   const secret = process.env.EMAIL_RELAY_SECRET;
-  if (!secret) return res.status(503).json({ success: false });
+  if (!secret) {
+    console.error('Email relay configuration missing: EMAIL_RELAY_SECRET');
+    return res.status(503).json({ success: false, error: 'RELAY_NOT_CONFIGURED' });
+  }
   const supplied = Buffer.from(req.headers.authorization || '');
   const expected = Buffer.from(`Bearer ${secret}`);
   if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) {
@@ -31,7 +34,10 @@ module.exports = async function handler(req, res) {
   }
   const user = process.env.EMAIL_SENDER_SMTP_USER || process.env.SMTP_USER;
   const pass = process.env.EMAIL_SENDER_SMTP_PASS || process.env.SMTP_PASS;
-  if (!user || !pass) return res.status(503).json({ success: false });
+  if (!user || !pass) {
+    console.error('Email relay SMTP credentials are missing');
+    return res.status(503).json({ success: false, error: 'SMTP_NOT_CONFIGURED' });
+  }
   try {
     if (!transporter) {
       const port = Number(process.env.EMAIL_SENDER_SMTP_PORT || process.env.SMTP_PORT || 465);
@@ -45,9 +51,9 @@ module.exports = async function handler(req, res) {
         socketTimeout: 10000,
       });
     }
-    await transporter.sendMail({
+    const delivery = await transporter.sendMail({
       from: {
-        name: process.env.SMTP_FROM_NAME || 'Pulse Messenger',
+        name: 'Plush Massenger',
         address: process.env.EMAIL_SENDER_SMTP_FROM || process.env.SMTP_FROM_EMAIL || user,
       },
       to: body.to,
@@ -55,9 +61,17 @@ module.exports = async function handler(req, res) {
       html: body.html,
       text: body.text,
     });
+    if (!delivery.accepted?.length) {
+      return res.status(502).json({ success: false, error: 'RECIPIENT_REJECTED' });
+    }
     return res.status(200).json({ success: true });
-  } catch {
-    console.error('Email relay delivery failed');
-    return res.status(502).json({ success: false });
+  } catch (error) {
+    // Log diagnostic codes only; SMTP error messages can contain recipient data.
+    console.error('Email relay delivery failed', {
+      code: error.code,
+      command: error.command,
+      responseCode: error.responseCode,
+    });
+    return res.status(502).json({ success: false, error: 'SMTP_DELIVERY_FAILED' });
   }
 };

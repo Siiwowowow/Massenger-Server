@@ -11,7 +11,7 @@ export const emailConfig = registerAs('email', () => {
     secure: port === 465 || process.env.SMTP_SECURE === 'true',
     user: process.env.EMAIL_SENDER_SMTP_USER || process.env.SMTP_USER || '',
     pass: process.env.EMAIL_SENDER_SMTP_PASS || process.env.SMTP_PASS || '',
-    fromName: process.env.SMTP_FROM_NAME || 'NestJS Backend',
+    fromName: 'Plush Massenger',
     fromEmail:
       process.env.EMAIL_SENDER_SMTP_FROM ||
       process.env.SMTP_FROM_EMAIL ||

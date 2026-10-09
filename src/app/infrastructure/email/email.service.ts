@@ -58,7 +58,7 @@ export class EmailService {
   }
 
   async sendMail(options: SendMailOptions): Promise<boolean> {
-    const fromName = process.env.SMTP_FROM_NAME || 'NestJS Backend';
+    const fromName = 'Plush Massenger';
     const fromEmail =
       process.env.EMAIL_SENDER_SMTP_FROM ||
       process.env.SMTP_FROM_EMAIL ||
@@ -83,8 +83,12 @@ export class EmailService {
           body: JSON.stringify(options),
           signal: AbortSignal.timeout(15000),
         });
-        if (!response.ok) throw new Error(`Email relay failed (${response.status})`);
-        const result = await response.json() as { success?: boolean };
+        const result = await response.json() as { success?: boolean; error?: string };
+        if (!response.ok) {
+          const knownErrors = ['RELAY_NOT_CONFIGURED', 'SMTP_NOT_CONFIGURED', 'RECIPIENT_REJECTED', 'SMTP_DELIVERY_FAILED'];
+          const reason = knownErrors.includes(result.error || '') ? result.error : 'RELAY_REQUEST_FAILED';
+          throw new Error(`Email relay failed (${response.status}): ${reason}`);
+        }
         return result.success === true;
       }
 
@@ -116,28 +120,28 @@ export class EmailService {
 
     if (!templatePath) {
       this.logger.warn(`Template ${templateName}.ejs not found on disk, using fallback inline renderer.`);
-      return `<p>Message from ${data.appName || 'NestJS Backend Server'}</p>`;
+      throw new Error(`Email template not found: ${templateName}`);
     }
 
     const templateContent = fs.readFileSync(templatePath, 'utf-8');
     return ejs.render(templateContent, {
       ...data,
-      appName: data.appName || process.env.APP_NAME || 'NestJS Backend',
+      appName: 'Plush Massenger',
     });
   }
 
-  async sendOtpEmail(to: string, otp: string, userName?: string): Promise<boolean> {
+  async sendOtpEmail(to: string, otp: string, userName?: string, expiresInMinutes = 15): Promise<boolean> {
     const html = await this.renderTemplate('otp', {
       otp,
       userName,
-      expiresInMinutes: 10,
+      expiresInMinutes,
     });
 
     return this.sendMail({
       to,
-      subject: `Your Verification Code: ${otp}`,
+      subject: 'Your Plush Massenger verification code',
       html,
-      text: `Your verification code is: ${otp}. It expires in 10 minutes.`,
+      text: `Plush Massenger\n\nYour verification code is: ${otp}. It expires in ${expiresInMinutes} minutes.\n\nDo not share this code with anyone. If you did not request it, you can ignore this email.`,
     });
   }
 
